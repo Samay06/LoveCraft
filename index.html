@@ -151,24 +151,21 @@ body{background:#1a1a2e;font-family:'Press Start 2P',monospace;overflow:hidden;w
 const HER_NAME = "Diya 💕";
 
 const LOVE_QUOTES = [
-  "You are my favorite person in every universe. 🌌",
-  "Every moment with you is a treasure I'll keep forever. 💎",
-  "I love you more than all the pixels in this world. 🌍",
-  "You make ordinary days feel like adventures. ✨",
-  "Finding you was the best thing that ever happened to me. 💗",
-  "You are rarer than a pink diamond. 💎",
-  "Home is not a place — it's being with you. 🏠",
-  "I'd build a thousand worlds just to share them with you. 🌟",
-  "You light up my darkest caves and my brightest skies. ☀️",
-  "In every lifetime, in every world, I'd choose you. 💫",
-  "You are my sunrise, my sunset, and all the stars between. 🌅",
-  "My heart has your name written in every language. 💌",
-  "You are the music that makes my heart dance. 🎵",
-  "With you, every day is Valentine's Day. 💕",
-  "You are not just my love — you are my best friend. 🤝❤️",
-  "I fall in love with you a little more every single day. 🌹",
-  "You are the reason I smile for no reason. 😊",
-  "Life with you is the greatest adventure of all. 🗺️",
+  "My favorite place in the entire world is next to you. 🌎",
+  "I look at you and see the rest of my life in your eyes. ✨",
+  "You are my blue sky, my sunny day, and my favorite daydream. ☁️",
+  "You make my heart skip a beat every single time you smile. 💓",
+  "To the moon and back, in every single timeline, it will always be you. 🌙",
+  "You are the 'once in a lifetime' kind of magic. 🪄✨",
+  "I choose you. And I'll choose you over and over. Without a doubt. 🌹",
+  "You are my today, my tomorrow, and my absolute forever. 🌅",
+  "Loving you is like breathing... how can I stop? 🌬️💗",
+  "Every love story is beautiful, but ours is my favorite. 📖💕",
+  "You are my home and my adventure, all in one person. 🏠🎒",
+  "If I had a flower for every time I thought of you, I'd walk in a garden forever. 🌸",
+  "I fall for your laugh, your smile, and your beautiful soul every single day. 😊💖",
+  "You make me feel like the luckiest pixel in the digital universe. 💻💕",
+  "We fit together like pieces of a puzzle made in heaven. 🧩✨"
 ];
 
 const PHOTOS = [
@@ -656,6 +653,29 @@ function updatePlayer(dt) {
     }
   }
 
+  // Void Fall Protection: Teleport player back safely
+  if (player.y > (WORLD_H - 1) * TILE) {
+    player.vx = 0; player.vy = 0;
+    player.x = WORLD_W / 2 * TILE;
+    let foundY = 30;
+    for (let r = 0; r < WORLD_H; r++) {
+      const b = getBlock(Math.floor(WORLD_W/2), r);
+      if (b !== B.AIR && b !== B.WATER && b !== B.LEAVES && b !== B.BEDROCK) {
+        foundY = r;
+        break;
+      }
+    }
+    player.y = (foundY - 2) * TILE;
+    spawnLoveParticles(canvas.width / 2, canvas.height / 2);
+  }
+
+  // Portal Touching Auto-Advance
+  const pc = Math.floor((player.x + player.w/2) / TILE);
+  const pr = Math.floor((player.y + player.h/2) / TILE);
+  if (getBlock(pc, pr) === B.PORTAL || getBlock(pc, pr + 1) === B.PORTAL) {
+    nextLevel();
+  }
+
   if (player.vx!==0) player.animT++;
 
   // Camera
@@ -898,78 +918,67 @@ function drawPlayer() {
 
   const bx=-player.w/2;
 
-  // 1. Soft Dynamic Drop Shadow
+  // 1. Soft Dynamic Shadow
   ctx.fillStyle='rgba(0,0,0,0.16)';
   ctx.fillRect(bx+2,player.h+bob,player.w-4,3);
 
-  // 2. High-Fashion Pleated Skirt & Denim Details
+  // 2. High-Waisted Blue Denim Jeans & White Sneakers
   const legSwing = player.vx!==0&&player.onGround?Math.sin(player.animT*0.25)*5:0;
   
-  // High-Waisted denim blue pleated skirt (`#3a5fa0`)
+  // Denim jeans base color (`#3a5fa0`)
   ctx.fillStyle='#3a5fa0';
-  ctx.fillRect(bx+2,14+bob,16,6); // pleated flare skirt base
-  ctx.fillRect(bx+3,14+bob,4,7); // left pleat flare
-  ctx.fillRect(bx+13,14+bob-legSwing,4,7+legSwing); // right pleat flare
+  ctx.fillRect(bx+2,14+bob,6,11);
+  ctx.fillRect(bx+12,14+bob-legSwing,6,11+legSwing);
   
-  // Elegant gold chain belt
-  ctx.fillStyle='#ffd700'; // shiny gold belt
-  ctx.fillRect(bx+3,13+bob,14,1);
-  ctx.fillStyle='#1e1e1e'; // stylish dark belt loops
-  ctx.fillRect(bx+5,13+bob,1,1);
-  ctx.fillRect(bx+14,13+bob,1,1);
+  // Denim wash highlights for texture (`#5c85c1`)
+  ctx.fillStyle='#5c85c1';
+  ctx.fillRect(bx+3,16+bob,2,6);
+  ctx.fillRect(bx+13,16+bob-legSwing,2,6);
 
-  // Slender legs & white knee-high socks
-  ctx.fillStyle='#fcd4b9'; // bare skin legs
-  ctx.fillRect(bx+4,20+bob,4,5);
-  ctx.fillRect(bx+12,20+bob-legSwing,4,5+legSwing);
-  
-  ctx.fillStyle='#ffffff'; // White high socks
-  ctx.fillRect(bx+4,17+bob,4,4);
-  ctx.fillRect(bx+12,17+bob-legSwing,4,4+legSwing);
+  // Dark belt with a shiny gold buckle
+  ctx.fillStyle='#1e1e1e'; // dark belt
+  ctx.fillRect(bx+2,13+bob,16,1);
+  ctx.fillStyle='#ffd700'; // gold buckle
+  ctx.fillRect(bx+9,12+bob,2,2);
 
-  // Modern Chunky Platform Sneakers (white & peach)
+  // platform white sneakers
   ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+3,24+bob,5,3);
-  ctx.fillRect(bx+11,24-legSwing+bob,5,3);
-  ctx.fillStyle='#e06b53'; // trendy peach sneaker detail
-  ctx.fillRect(bx+3,27+bob,5,1);
-  ctx.fillRect(bx+11,27-legSwing+bob,5,1);
+  ctx.fillRect(bx+1,25+bob,7,3);
+  ctx.fillRect(bx+11,25-legSwing+bob,7,3);
+  ctx.fillStyle='#e06b53'; // peach sneaker sole
+  ctx.fillRect(bx+1,28+bob,7,1);
+  ctx.fillRect(bx+11,28-legSwing+bob,7,1);
 
-  // 3. WAIST-LENGTH BEAUTIFUL HAIR (BACK PART) - gorgeous swaying physics!
-  const hairSway = Math.sin(gameTime * 0.07) * 2;
-  const hairBob = Math.cos(gameTime * 0.05) * 0.5;
-  ctx.fillStyle='#27140b'; // dark rich brown base
-  ctx.fillRect(bx+1+hairSway,bob-3,18,22); // cascades way down past her waist!
+  // 3. LAYERED FLOWING BROWNISH HAIR (BACK) - waist-length with active wind sway!
+  const hairSway = Math.sin(gameTime * 0.08) * 2;
+  ctx.fillStyle='#8d583c'; // beautiful rich warm milk-chocolate brown base
+  ctx.fillRect(bx+1+hairSway,bob-3,18,22);
   
-  // Caramel & Chestnut highlight layers (Back)
-  ctx.fillStyle='#5c351f'; // chestnut warm tone
+  // Chestnut and honey highlights strands (Back)
+  ctx.fillStyle='#5c351f'; // lowlights
   ctx.fillRect(bx+2+hairSway,bob+2,3,16);
   ctx.fillRect(bx+15+hairSway,bob+2,3,16);
-  ctx.fillStyle='#7e4f35'; // glowing caramel strand highlight
+  ctx.fillStyle='#c59b6d'; // glowing golden-honey highlights
   ctx.fillRect(bx+4+hairSway,bob+5,2,11);
   ctx.fillRect(bx+14+hairSway,bob+5,2,11);
 
-  // 4. Ultra-Modern Off-Shoulder Sky-Blue Top
-  ctx.fillStyle='#aee2ff'; // Beautiful off-shoulder crop top
-  ctx.fillRect(bx+3,7+bob,14,5);
+  // 4. Stylish Crop Top (Sky-blue)
+  ctx.fillStyle='#aee2ff'; // Crop-top
+  ctx.fillRect(bx+3,6+bob,14,6);
   
-  // Slender off-shoulder sleeves details
-  ctx.fillRect(bx+0,8+bob,3,3);
-  ctx.fillRect(bx+17,8+bob,3,3);
-
   // Fine spaghetti shoulder straps (white)
   ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+4,5+bob,1,2);
-  ctx.fillRect(bx+15,5+bob,1,2);
+  ctx.fillRect(bx+4,5+bob,1,1);
+  ctx.fillRect(bx+15,5+bob,1,1);
 
   // Exposed cute midriff
   ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+3,12+bob,14,2);
+  ctx.fillRect(bx+3,12+bob,14,1);
 
   // 5. Silver Chain & Heart Gem Necklace
   ctx.fillStyle='#fcd4b9'; // neck
   ctx.fillRect(bx+7,4+bob,6,2);
-  // Delicate black choker
+  // Elegant black choker
   ctx.fillStyle='#1e1e1e';
   ctx.fillRect(bx+7,5+bob,6,1);
   // Glistening silver chain + shiny pink heart diamond pendant
@@ -981,29 +990,29 @@ function drawPlayer() {
   // Slender arms
   const armSwing=player.vx!==0&&player.onGround?Math.sin(player.animT*0.25)*6:0;
   ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+0,11+bob+armSwing,2,6);
-  ctx.fillRect(bx+18,11+bob-armSwing,2,6);
+  ctx.fillRect(bx+0,7+bob+armSwing,3,9);
+  ctx.fillRect(bx+17,7+bob-armSwing,3,9);
 
-  // 6. Expressive, Stunning Head & Face
+  // 6. Pretty Face & Head
   ctx.fillStyle='#fcd4b9'; 
   ctx.fillRect(bx+3,bob-8,14,13);
 
-  // HAIR FRAMING & LUSH FRINGE (FRONT) - waist length sides
-  ctx.fillStyle='#27140b'; // base chocolate
+  // HAIR FRAMING & LUSH FRINGE (FRONT) - long side locks
+  ctx.fillStyle='#8d583c'; // beautiful rich warm milk-chocolate brown base
   ctx.fillRect(bx+2,bob-9,16,5); // crown
-  // Beautiful long side locks flowing down past her waist in front
+  // Long side locks flowing down past her waist
   ctx.fillRect(bx+1+hairSway*0.6,bob-4,3,20);
   ctx.fillRect(bx+16+hairSway*0.6,bob-4,3,20);
   
   // Shimmering highlights (Front locks)
-  ctx.fillStyle='#5c351f';
+  ctx.fillStyle='#c59b6d'; // glowing golden-honey highlights
   ctx.fillRect(bx+2+hairSway*0.6,bob+2,1,12);
   ctx.fillRect(bx+17+hairSway*0.6,bob+2,1,12);
   ctx.fillStyle='#7e4f35';
   ctx.fillRect(bx+4,bob-8,4,1);
   ctx.fillRect(bx+12,bob-8,3,1);
 
-  // Cute matching Gold Star Hairclips!
+  // Gold Star Hairclips!
   ctx.fillStyle='#ffd700';
   ctx.fillRect(bx+13,bob-6,2,2);
   ctx.fillRect(bx+5,bob-6,1,1);
