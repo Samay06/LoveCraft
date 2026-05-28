@@ -898,115 +898,148 @@ function drawPlayer() {
 
   const bx=-player.w/2;
 
-  // 1. Soft Dynamic Shadow
-  ctx.fillStyle='rgba(0,0,0,0.18)';
+  // 1. Soft Dynamic Drop Shadow
+  ctx.fillStyle='rgba(0,0,0,0.16)';
   ctx.fillRect(bx+2,player.h+bob,player.w-4,3);
 
-  // 2. High-Waisted Denim Shorts & Cute Leggings
+  // 2. High-Fashion Pleated Skirt & Denim Details
   const legSwing = player.vx!==0&&player.onGround?Math.sin(player.animT*0.25)*5:0;
-  ctx.fillStyle='#3a5fa0'; // Stylish high-waisted denim shorts
-  ctx.fillRect(bx+2,14+bob,6,6);
-  ctx.fillRect(bx+12,14+bob-legSwing,6,6+legSwing);
   
-  // Cute socks/leggings details
+  // High-Waisted denim blue pleated skirt (`#3a5fa0`)
+  ctx.fillStyle='#3a5fa0';
+  ctx.fillRect(bx+2,14+bob,16,6); // pleated flare skirt base
+  ctx.fillRect(bx+3,14+bob,4,7); // left pleat flare
+  ctx.fillRect(bx+13,14+bob-legSwing,4,7+legSwing); // right pleat flare
+  
+  // Elegant gold chain belt
+  ctx.fillStyle='#ffd700'; // shiny gold belt
+  ctx.fillRect(bx+3,13+bob,14,1);
+  ctx.fillStyle='#1e1e1e'; // stylish dark belt loops
+  ctx.fillRect(bx+5,13+bob,1,1);
+  ctx.fillRect(bx+14,13+bob,1,1);
+
+  // Slender legs & white knee-high socks
+  ctx.fillStyle='#fcd4b9'; // bare skin legs
+  ctx.fillRect(bx+4,20+bob,4,5);
+  ctx.fillRect(bx+12,20+bob-legSwing,4,5+legSwing);
+  
   ctx.fillStyle='#ffffff'; // White high socks
-  ctx.fillRect(bx+2,20+bob,6,4);
-  ctx.fillRect(bx+12,20+bob-legSwing,6,4+legSwing);
+  ctx.fillRect(bx+4,17+bob,4,4);
+  ctx.fillRect(bx+12,17+bob-legSwing,4,4+legSwing);
 
-  // Shoes (modern white sneakers with peach soles)
+  // Modern Chunky Platform Sneakers (white & peach)
   ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+1,24+bob,7,3);
-  ctx.fillRect(bx+11,24-legSwing+bob,7,3);
-  ctx.fillStyle='#e06b53'; // cute peach soles
-  ctx.fillRect(bx+1,27+bob,7,1);
-  ctx.fillRect(bx+11,27-legSwing+bob,7,1);
+  ctx.fillRect(bx+3,24+bob,5,3);
+  ctx.fillRect(bx+11,24-legSwing+bob,5,3);
+  ctx.fillStyle='#e06b53'; // trendy peach sneaker detail
+  ctx.fillRect(bx+3,27+bob,5,1);
+  ctx.fillRect(bx+11,27-legSwing+bob,5,1);
 
-  // 3. LAYERED SHINY HAIR (BACK PART) - with active wind sway!
-  const hairSway = Math.sin(gameTime * 0.08) * 1.5;
-  ctx.fillStyle='#27140b'; // rich dark chocolate base
-  ctx.fillRect(bx+1+hairSway,bob-3,18,17);
-  // Caramel highlights strands (Back)
-  ctx.fillStyle='#5c351f';
-  ctx.fillRect(bx+2+hairSway,bob+2,3,10);
-  ctx.fillRect(bx+15+hairSway,bob+2,3,10);
+  // 3. WAIST-LENGTH BEAUTIFUL HAIR (BACK PART) - gorgeous swaying physics!
+  const hairSway = Math.sin(gameTime * 0.07) * 2;
+  const hairBob = Math.cos(gameTime * 0.05) * 0.5;
+  ctx.fillStyle='#27140b'; // dark rich brown base
+  ctx.fillRect(bx+1+hairSway,bob-3,18,22); // cascades way down past her waist!
+  
+  // Caramel & Chestnut highlight layers (Back)
+  ctx.fillStyle='#5c351f'; // chestnut warm tone
+  ctx.fillRect(bx+2+hairSway,bob+2,3,16);
+  ctx.fillRect(bx+15+hairSway,bob+2,3,16);
+  ctx.fillStyle='#7e4f35'; // glowing caramel strand highlight
+  ctx.fillRect(bx+4+hairSway,bob+5,2,11);
+  ctx.fillRect(bx+14+hairSway,bob+5,2,11);
 
-  // 4. Stylish Midriff & Sky-Blue Crop Top
-  ctx.fillStyle='#aee2ff'; // Premium light sky-blue crop-top
-  ctx.fillRect(bx+3,6+bob,14,5);
-  // Straps
+  // 4. Ultra-Modern Off-Shoulder Sky-Blue Top
+  ctx.fillStyle='#aee2ff'; // Beautiful off-shoulder crop top
+  ctx.fillRect(bx+3,7+bob,14,5);
+  
+  // Slender off-shoulder sleeves details
+  ctx.fillRect(bx+0,8+bob,3,3);
+  ctx.fillRect(bx+17,8+bob,3,3);
+
+  // Fine spaghetti shoulder straps (white)
   ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+4,5+bob,2,2);
-  ctx.fillRect(bx+14,5+bob,2,2);
+  ctx.fillRect(bx+4,5+bob,1,2);
+  ctx.fillRect(bx+15,5+bob,1,2);
 
   // Exposed cute midriff
   ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+3,11+bob,14,3);
+  ctx.fillRect(bx+3,12+bob,14,2);
 
-  // 5. Neck & Chic Accessories (Choker + Heart Necklace)
+  // 5. Silver Chain & Heart Gem Necklace
   ctx.fillStyle='#fcd4b9'; // neck
   ctx.fillRect(bx+7,4+bob,6,2);
-  // Elegant black choker
+  // Delicate black choker
   ctx.fillStyle='#1e1e1e';
   ctx.fillRect(bx+7,5+bob,6,1);
-  // Shimmering pink heart pendant
-  ctx.fillStyle='#ff6b9d';
-  ctx.fillRect(bx+9,7+bob,2,2);
+  // Glistening silver chain + shiny pink heart diamond pendant
+  ctx.fillStyle='#d5d9e0'; // silver chain link
+  ctx.fillRect(bx+8,7+bob,4,1);
+  ctx.fillStyle='#ff6b9d'; // glowing pink gemstone
+  ctx.fillRect(bx+9,8+bob,2,2);
 
-  // Arms (slender and pretty)
+  // Slender arms
   const armSwing=player.vx!==0&&player.onGround?Math.sin(player.animT*0.25)*6:0;
   ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+0,7+bob+armSwing,3,9);
-  ctx.fillRect(bx+17,7+bob-armSwing,3,9);
+  ctx.fillRect(bx+0,11+bob+armSwing,2,6);
+  ctx.fillRect(bx+18,11+bob-armSwing,2,6);
 
-  // 6. Pretty Face & Head
+  // 6. Expressive, Stunning Head & Face
   ctx.fillStyle='#fcd4b9'; 
   ctx.fillRect(bx+3,bob-8,14,13);
 
-  // LAYERED SHINY HAIR (FRONT & SIDES) - beautifully frames her face
-  ctx.fillStyle='#27140b'; // dark chocolate base
+  // HAIR FRAMING & LUSH FRINGE (FRONT) - waist length sides
+  ctx.fillStyle='#27140b'; // base chocolate
   ctx.fillRect(bx+2,bob-9,16,5); // crown
-  // Sides flowing down past shoulders with slight wind flare
-  ctx.fillRect(bx+1+hairSway*0.5,bob-4,3,15);
-  ctx.fillRect(bx+16+hairSway*0.5,bob-4,3,15);
-
-  // Soft caramel/gold hair shine highlights
-  ctx.fillStyle='#7e4f35'; 
+  // Beautiful long side locks flowing down past her waist in front
+  ctx.fillRect(bx+1+hairSway*0.6,bob-4,3,20);
+  ctx.fillRect(bx+16+hairSway*0.6,bob-4,3,20);
+  
+  // Shimmering highlights (Front locks)
+  ctx.fillStyle='#5c351f';
+  ctx.fillRect(bx+2+hairSway*0.6,bob+2,1,12);
+  ctx.fillRect(bx+17+hairSway*0.6,bob+2,1,12);
+  ctx.fillStyle='#7e4f35';
   ctx.fillRect(bx+4,bob-8,4,1);
   ctx.fillRect(bx+12,bob-8,3,1);
-  ctx.fillRect(bx+2+hairSway*0.5,bob+1,1,6);
-  ctx.fillRect(bx+17+hairSway*0.5,bob+1,1,6);
 
-  // Cute Gold Star Hairpin in her hair!
+  // Cute matching Gold Star Hairclips!
   ctx.fillStyle='#ffd700';
   ctx.fillRect(bx+13,bob-6,2,2);
+  ctx.fillRect(bx+5,bob-6,1,1);
 
-  // 7. Expressive Sparkling Eyes with Chic Eyelashes
-  // Soft dark eyebrows/eyelashes
-  ctx.fillStyle='#1c0d06';
+  // 7. EXQUISITE BEAUTIFUL EYES (Large, Shaded Hazel-Gold Gradient)
+  // Sharp eyeliner and eyelashes
+  ctx.fillStyle='#1c0d06'; // Eyelashes & Brows
   ctx.fillRect(bx+5,bob-4,4,1);
   ctx.fillRect(bx+11,bob-4,4,1);
+  ctx.fillRect(bx+4,bob-3,1,1); // wing eyeliner left
+  ctx.fillRect(bx+15,bob-3,1,1); // wing eyeliner right
 
-  // Warm glowing brown eyes
-  ctx.fillStyle='#4b2e1e';
-  ctx.fillRect(bx+6,bob-3,3,3);
-  ctx.fillRect(bx+11,bob-3,3,3);
+  // Stunning Hazel-Honey Eyes Gradient
+  ctx.fillStyle='#4b2e1e'; // deep chocolate outer eye ring
+  ctx.fillRect(bx+5,bob-3,3,3);
+  ctx.fillRect(bx+12,bob-3,3,3);
+  ctx.fillStyle='#c88f46'; // warm honey golden inner iris
+  ctx.fillRect(bx+6,bob-2,1,2);
+  ctx.fillRect(bx+13,bob-2,1,2);
   
-  // Double-glint sparkles (makes her eyes look extremely pretty and alive)
+  // Captivating Double Sparkle Glint (Anime-style reflection)
   ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+6,bob-3,1,1);
-  ctx.fillRect(bx+7,bob-2,1,1);
-  ctx.fillRect(bx+11,bob-3,1,1);
-  ctx.fillRect(bx+12,bob-2,1,1);
+  ctx.fillRect(bx+5,bob-3,1,1); // main glint left
+  ctx.fillRect(bx+6,bob-2,1,1); // sub glint left
+  ctx.fillRect(bx+12,bob-3,1,1); // main glint right
+  ctx.fillRect(bx+13,bob-2,1,1); // sub glint right
 
-  // Soft glowing rosy-peach blush
-  ctx.fillStyle='rgba(255, 120, 90, 0.58)'; 
+  // Glowing peach blush
+  ctx.fillStyle='rgba(255, 115, 80, 0.6)'; 
   ctx.fillRect(bx+5,bob,3,2);
   ctx.fillRect(bx+12,bob,3,2);
 
-  // Cute Peach Lips with a sweet curved smile
+  // Curved Pretty Smile
   ctx.fillStyle='#e06b53';
   ctx.fillRect(bx+7,bob+3,6,2);
-  ctx.fillStyle='#fcd4b9'; // smile curvature
+  ctx.fillStyle='#fcd4b9'; // smile carve
   ctx.fillRect(bx+9,bob+3,2,1);
 
   // 8. Tool / Block rendering
