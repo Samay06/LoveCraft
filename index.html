@@ -1,1383 +1,1761 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LoveCraft World 💕</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;image-rendering:pixelated;}
-body{background:#1a1a2e;font-family:'Press Start 2P',monospace;overflow:hidden;width:100vw;height:100vh;}
-#gameContainer{position:relative;width:100vw;height:100vh;}
-#gameCanvas{display:block;position:absolute;top:0;left:0;}
-#particleCanvas{display:block;position:absolute;top:0;left:0;pointer-events:none;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoveCraft World 💕</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-/* HUD */
-#hud{position:absolute;top:0;left:0;right:0;z-index:20;pointer-events:none;}
-#topBar{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(0,0,0,0.6);border-bottom:2px solid #ff6b9d;}
-#quoteTicker{font-size:6px;color:#ffb3cc;flex:1;text-align:center;overflow:hidden;white-space:nowrap;}
-#dayCounter{font-size:6px;color:#ffd700;white-space:nowrap;margin-left:10px;}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      image-rendering: pixelated;
+    }
 
-#bottomHUD{position:absolute;bottom:0;left:0;right:0;z-index:20;display:flex;flex-direction:column;align-items:center;padding-bottom:8px;background:linear-gradient(transparent,rgba(0,0,0,0.7));pointer-events:none;}
-#healthRow{display:flex;gap:3px;margin-bottom:6px;}
-.hrt{font-size:12px;}
-#hotbarRow{display:flex;gap:3px;pointer-events:all;}
-.hslot{width:44px;height:44px;background:rgba(30,30,30,0.85);border:2px solid #555;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;transition:border-color .15s;}
-.hslot.active{border:2px solid #ff6b9d;box-shadow:0 0 8px #ff6b9d88;}
-.hslot .slotIcon{font-size:18px;line-height:1;}
-.hslot .slotName{font-size:4px;color:#aaa;margin-top:2px;}
-.hslot .slotNum{position:absolute;top:2px;left:4px;font-size:5px;color:#888;}
+    body {
+      background: #1a1a2e;
+      font-family: 'Press Start 2P', monospace;
+      overflow: hidden;
+      width: 100vw;
+      height: 100vh;
+    }
 
-/* Info panel */
-#infoPanel{position:absolute;top:50px;right:10px;width:140px;background:rgba(0,0,0,0.75);border:2px solid #ff6b9d;padding:8px;z-index:20;pointer-events:none;}
-#infoPanel h3{font-size:6px;color:#ff6b9d;margin-bottom:6px;}
-#infoPanel p{font-size:5px;color:#ccc;line-height:2;margin-bottom:3px;}
-#coordDisplay{font-size:5px;color:#aaa;}
-#modeDisplay{font-size:5px;color:#ffd700;margin-top:4px;}
+    #gameContainer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
 
-/* Inventory */
-#inventory{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.8);z-index:50;align-items:center;justify-content:center;}
-#inventory.open{display:flex;}
-#invBox{background:#1e1e1e;border:3px solid #ff6b9d;padding:20px;max-width:500px;width:90%;}
-#invBox h2{font-size:9px;color:#ff6b9d;margin-bottom:14px;text-align:center;}
-#invGrid{display:grid;grid-template-columns:repeat(8,50px);gap:4px;margin-bottom:16px;}
-.invSlot{width:50px;height:50px;background:#2a2a2a;border:2px solid #444;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-size:20px;}
-.invSlot:hover{border-color:#ff6b9d;}
-.invSlot span{font-size:5px;color:#aaa;margin-top:2px;}
-#invClose{background:#ff6b9d;border:none;border-bottom:3px solid #a0003a;color:white;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 16px;cursor:pointer;display:block;margin:0 auto;}
+    #gameCanvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
 
-/* Popup (discoveries) */
-#popup{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:60;align-items:center;justify-content:center;}
-#popup.open{display:flex;}
-#popBox{background:#1a1a1a;border:4px solid #ff6b9d;box-shadow:0 0 40px #ff6b9d55,8px 8px 0 #000;max-width:380px;width:90%;padding:22px;text-align:center;animation:popIn .35s cubic-bezier(.175,.885,.32,1.275);}
-@keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
-#popIcon{font-size:40px;margin-bottom:10px;display:block;}
-#popType{font-size:7px;color:#ff6b9d;margin-bottom:10px;}
-#popMsg{font-size:8px;color:#eee;line-height:2.2;margin-bottom:16px;}
-#popPhoto{width:100%;max-height:160px;object-fit:cover;border:3px solid #ff6b9d;margin-bottom:12px;display:none;image-rendering:auto;}
-#popClose{background:#ff6b9d;border:none;border-bottom:3px solid #a0003a;color:#fff;font-family:'Press Start 2P',monospace;font-size:7px;padding:8px 14px;cursor:pointer;}
+    #particleCanvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
 
-/* Minimap */
-#minimap{position:absolute;top:50px;left:10px;border:2px solid #ff6b9d;z-index:20;}
+    /* HUD */
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      pointer-events: none;
+    }
 
-/* Controls hint */
-#hint{position:absolute;bottom:80px;left:10px;background:rgba(0,0,0,0.6);border:1px solid #444;padding:6px 8px;font-size:5px;color:#888;z-index:20;pointer-events:none;line-height:2;}
+    #topBar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.6);
+      border-bottom: 2px solid #ff6b9d;
+    }
 
-/* Title screen */
-#titleScreen{position:absolute;inset:0;background:linear-gradient(135deg,#0d0d1a,#1a0d2e,#0d1a1a);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
-#titleScreen h1{font-size:clamp(14px,3vw,28px);color:#ff6b9d;text-shadow:0 0 30px #ff6b9d88,4px 4px 0 #800030;text-align:center;animation:glow 2s ease-in-out infinite;}
-@keyframes glow{0%,100%{text-shadow:0 0 20px #ff6b9d88,4px 4px 0 #800030}50%{text-shadow:0 0 50px #ff6b9dcc,4px 4px 0 #800030}}
-#titleScreen p{font-size:8px;color:#ffb3cc;text-align:center;line-height:2.5;}
-#startBtn{background:#ff6b9d;border:none;border-bottom:4px solid #800030;color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;padding:14px 28px;cursor:pointer;animation:btnPulse 1.5s ease-in-out infinite;}
-@keyframes btnPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-#startBtn:hover{background:#ff9bbf;}
-.titleStar{position:absolute;color:#ffb3cc;animation:twinkle 2s ease-in-out infinite;pointer-events:none;}
-@keyframes twinkle{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
-</style>
+    #quoteTicker {
+      font-size: 6px;
+      color: #ffb3cc;
+      flex: 1;
+      text-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    #dayCounter {
+      font-size: 6px;
+      color: #ffd700;
+      white-space: nowrap;
+      margin-left: 10px;
+    }
+
+    #bottomHUD {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 8px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      pointer-events: none;
+    }
+
+    #healthRow {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 6px;
+    }
+
+    .hrt {
+      font-size: 12px;
+    }
+
+    #hotbarRow {
+      display: flex;
+      gap: 3px;
+      pointer-events: all;
+    }
+
+    .hslot {
+      width: 44px;
+      height: 44px;
+      background: rgba(30, 30, 30, 0.85);
+      border: 2px solid #555;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: border-color .15s;
+    }
+
+    .hslot.active {
+      border: 2px solid #ff6b9d;
+      box-shadow: 0 0 8px #ff6b9d88;
+    }
+
+    .hslot .slotIcon {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .hslot .slotName {
+      font-size: 4px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+
+    .hslot .slotNum {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 5px;
+      color: #888;
+    }
+
+    /* Info panel */
+    #infoPanel {
+      position: absolute;
+      top: 50px;
+      right: 10px;
+      width: 140px;
+      background: rgba(0, 0, 0, 0.75);
+      border: 2px solid #ff6b9d;
+      padding: 8px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    #infoPanel h3 {
+      font-size: 6px;
+      color: #ff6b9d;
+      margin-bottom: 6px;
+    }
+
+    #infoPanel p {
+      font-size: 5px;
+      color: #ccc;
+      line-height: 2;
+      margin-bottom: 3px;
+    }
+
+    #coordDisplay {
+      font-size: 5px;
+      color: #aaa;
+    }
+
+    #modeDisplay {
+      font-size: 5px;
+      color: #ffd700;
+      margin-top: 4px;
+    }
+
+    /* Inventory */
+    #inventory {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 50;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #inventory.open {
+      display: flex;
+    }
+
+    #invBox {
+      background: #1e1e1e;
+      border: 3px solid #ff6b9d;
+      padding: 20px;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    #invBox h2 {
+      font-size: 9px;
+      color: #ff6b9d;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+
+    #invGrid {
+      display: grid;
+      grid-template-columns: repeat(8, 50px);
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+
+    .invSlot {
+      width: 50px;
+      height: 50px;
+      background: #2a2a2a;
+      border: 2px solid #444;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .invSlot:hover {
+      border-color: #ff6b9d;
+    }
+
+    .invSlot span {
+      font-size: 5px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+
+    #invClose {
+      background: #ff6b9d;
+      border: none;
+      border-bottom: 3px solid #a0003a;
+      color: white;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      padding: 8px 16px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Popup (discoveries) */
+    #popup {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 60;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #popup.open {
+      display: flex;
+    }
+
+    #popBox {
+      background: #1a1a1a;
+      border: 4px solid #ff6b9d;
+      box-shadow: 0 0 40px #ff6b9d55, 8px 8px 0 #000;
+      max-width: 380px;
+      width: 90%;
+      padding: 22px;
+      text-align: center;
+      animation: popIn .35s cubic-bezier(.175, .885, .32, 1.275);
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(.6);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    #popIcon {
+      font-size: 40px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    #popType {
+      font-size: 7px;
+      color: #ff6b9d;
+      margin-bottom: 10px;
+    }
+
+    #popMsg {
+      font-size: 8px;
+      color: #eee;
+      line-height: 2.2;
+      margin-bottom: 16px;
+    }
+
+    #popPhoto {
+      width: 100%;
+      max-height: 160px;
+      object-fit: cover;
+      border: 3px solid #ff6b9d;
+      margin-bottom: 12px;
+      display: none;
+      image-rendering: auto;
+    }
+
+    #popClose {
+      background: #ff6b9d;
+      border: none;
+      border-bottom: 3px solid #a0003a;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 7px;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+
+    /* Minimap */
+    #minimap {
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      border: 2px solid #ff6b9d;
+      z-index: 20;
+    }
+
+    /* Controls hint */
+    #hint {
+      position: absolute;
+      bottom: 80px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #444;
+      padding: 6px 8px;
+      font-size: 5px;
+      color: #888;
+      z-index: 20;
+      pointer-events: none;
+      line-height: 2;
+    }
+
+    /* Title screen */
+    #titleScreen {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0d0d1a, #1a0d2e, #0d1a1a);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    #titleScreen h1 {
+      font-size: clamp(14px, 3vw, 28px);
+      color: #ff6b9d;
+      text-shadow: 0 0 30px #ff6b9d88, 4px 4px 0 #800030;
+      text-align: center;
+      animation: glow 2s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+
+      0%,
+      100% {
+        text-shadow: 0 0 20px #ff6b9d88, 4px 4px 0 #800030
+      }
+
+      50% {
+        text-shadow: 0 0 50px #ff6b9dcc, 4px 4px 0 #800030
+      }
+    }
+
+    #titleScreen p {
+      font-size: 8px;
+      color: #ffb3cc;
+      text-align: center;
+      line-height: 2.5;
+    }
+
+    #startBtn {
+      background: #ff6b9d;
+      border: none;
+      border-bottom: 4px solid #800030;
+      color: #fff;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      padding: 14px 28px;
+      cursor: pointer;
+      animation: btnPulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes btnPulse {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.05)
+      }
+    }
+
+    #startBtn:hover {
+      background: #ff9bbf;
+    }
+
+    .titleStar {
+      position: absolute;
+      color: #ffb3cc;
+      animation: twinkle 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: .2;
+        transform: scale(.8)
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.2)
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div id="gameContainer">
-  <canvas id="gameCanvas"></canvas>
-  <canvas id="particleCanvas"></canvas>
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+    <canvas id="particleCanvas"></canvas>
 
-  <!-- Title Screen -->
-  <div id="titleScreen">
-    <h1>💕Diya💕</h1>
-    <p>A world built just for you<br>Explore, build, and discover<br>our love hidden everywhere...</p>
-    <button id="startBtn" onclick="startGame()">▶ Enter Our World</button>
-    <p style="font-size:6px;color:#666;margin-top:10px;">WASD/Arrows • Space=Jump • Click=Dig/Place • E=Inventory</p>
-  </div>
+    <!-- Title Screen -->
+    <div id="titleScreen">
+      <h1>💕Diya💕</h1>
+      <p>A world built just for you<br>Explore, build, and discover<br>our love hidden everywhere...</p>
+      <button id="startBtn" onclick="startGame()">▶ Enter Our World</button>
+      <p style="font-size:6px;color:#666;margin-top:10px;">WASD/Arrows • Space=Jump • Click=Dig/Place • E=Inventory</p>
+    </div>
 
-  <!-- HUD -->
-  <div id="hud">
-    <div id="topBar">
-      <span style="font-size:6px;color:#ff6b9d;white-space:nowrap;">💕 LoveCraft</span>
-      <button id="levelBtn" onclick="nextLevel()" style="background:#ff6b9d;border:none;border-bottom:2px solid #800030;color:#fff;font-family:'Press Start 2P',monospace;font-size:5px;padding:3px 6px;cursor:pointer;margin-left:8px;pointer-events:all;">Meadow 🌱</button>
-      <div id="quoteTicker">Loading love...</div>
-      <div id="dayCounter">Day 1 ☀️</div>
+    <!-- HUD -->
+    <div id="hud">
+      <div id="topBar">
+        <span style="font-size:6px;color:#ff6b9d;white-space:nowrap;">💕 LoveCraft</span>
+        <button id="levelBtn" onclick="nextLevel()"
+          style="background:#ff6b9d;border:none;border-bottom:2px solid #800030;color:#fff;font-family:'Press Start 2P',monospace;font-size:5px;padding:3px 6px;cursor:pointer;margin-left:8px;pointer-events:all;">Meadow
+          🌱</button>
+        <div id="quoteTicker">Loading love...</div>
+        <div id="dayCounter">Day 1 ☀️</div>
+      </div>
+    </div>
+
+    <div id="bottomHUD">
+      <div id="healthRow"></div>
+      <div id="hotbarRow"></div>
+    </div>
+
+    <!-- Info panel -->
+    <div id="infoPanel">
+      <h3>📍 Status</h3>
+      <p id="coordDisplay">X:0 Y:0</p>
+      <p id="modeDisplay">⛏ DIG MODE</p>
+      <p style="font-size:5px;color:#ff6b9d;margin-top:6px;">💎 Found: <span id="findCount">0</span></p>
+      <p style="font-size:5px;color:#ffd700;margin-top:4px;">🏠 Blocks: <span id="blockCount">0</span></p>
+    </div>
+
+    <!-- Minimap -->
+    <canvas id="minimap" width="100" height="60"></canvas>
+
+    <!-- Controls hint -->
+    <div id="hint">
+      WASD/← →: Move &nbsp;|&nbsp; Space: Jump<br>
+      Left Click: Dig &nbsp;|&nbsp; Right Click: Place<br>
+      1-8: Select Block &nbsp;|&nbsp; E: Inventory<br>
+      Shift: Sprint &nbsp;|&nbsp; R: Build Mode
+    </div>
+
+    <!-- Inventory -->
+    <div id="inventory">
+      <div id="invBox">
+        <h2>🎒 Inventory & Crafting</h2>
+        <div id="invGrid"></div>
+        <button id="invClose" onclick="toggleInventory()">Close (E)</button>
+      </div>
+    </div>
+
+    <!-- Discovery Popup -->
+    <div id="popup">
+      <div id="popBox">
+        <span id="popIcon">💗</span>
+        <div id="popType">LOVE NOTE!</div>
+        <img id="popPhoto" src="" alt="">
+        <div id="popMsg"></div>
+        <button id="popClose" onclick="closePopup()">Keep Exploring ⛏</button>
+      </div>
     </div>
   </div>
 
-  <div id="bottomHUD">
-    <div id="healthRow"></div>
-    <div id="hotbarRow"></div>
-  </div>
-
-  <!-- Info panel -->
-  <div id="infoPanel">
-    <h3>📍 Status</h3>
-    <p id="coordDisplay">X:0 Y:0</p>
-    <p id="modeDisplay">⛏ DIG MODE</p>
-    <p style="font-size:5px;color:#ff6b9d;margin-top:6px;">💎 Found: <span id="findCount">0</span></p>
-    <p style="font-size:5px;color:#ffd700;margin-top:4px;">🏠 Blocks: <span id="blockCount">0</span></p>
-  </div>
-
-  <!-- Minimap -->
-  <canvas id="minimap" width="100" height="60"></canvas>
-
-  <!-- Controls hint -->
-  <div id="hint">
-    WASD/← →: Move &nbsp;|&nbsp; Space: Jump<br>
-    Left Click: Dig &nbsp;|&nbsp; Right Click: Place<br>
-    1-8: Select Block &nbsp;|&nbsp; E: Inventory<br>
-    Shift: Sprint &nbsp;|&nbsp; R: Build Mode
-  </div>
-
-  <!-- Inventory -->
-  <div id="inventory">
-    <div id="invBox">
-      <h2>🎒 Inventory & Crafting</h2>
-      <div id="invGrid"></div>
-      <button id="invClose" onclick="toggleInventory()">Close (E)</button>
-    </div>
-  </div>
-
-  <!-- Discovery Popup -->
-  <div id="popup">
-    <div id="popBox">
-      <span id="popIcon">💗</span>
-      <div id="popType">LOVE NOTE!</div>
-      <img id="popPhoto" src="" alt="">
-      <div id="popMsg"></div>
-      <button id="popClose" onclick="closePopup()">Keep Exploring ⛏</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ════════════════════════════════════════════════════
-//  ❤️  CUSTOMIZE YOUR LOVE CONTENT HERE  ❤️
-// ════════════════════════════════════════════════════
-const HER_NAME = "Diya 💕";
-
-const LOVE_QUOTES = [
-  "My favorite place in the entire world is next to you. 🌎",
-  "I look at you and see the rest of my life in your eyes. ✨",
-  "You are my blue sky, my sunny day, and my favorite daydream. ☁️",
-  "You make my heart skip a beat every single time you smile. 💓",
-  "To the moon and back, in every single timeline, it will always be you. 🌙",
-  "You are the 'once in a lifetime' kind of magic. 🪄✨",
-  "I choose you. And I'll choose you over and over. Without a doubt. 🌹",
-  "You are my today, my tomorrow, and my absolute forever. 🌅",
-  "Loving you is like breathing... how can I stop? 🌬️💗",
-  "Every love story is beautiful, but ours is my favorite. 📖💕",
-  "You are my home and my adventure, all in one person. 🏠🎒",
-  "If I had a flower for every time I thought of you, I'd walk in a garden forever. 🌸",
-  "I fall for your laugh, your smile, and your beautiful soul every single day. 😊💖",
-  "You make me feel like the luckiest pixel in the digital universe. 💻💕",
-  "We fit together like pieces of a puzzle made in heaven. 🧩✨"
-];
-
-const PHOTOS = [
-  "bd/WhatsApp Image 2026-02-08 at 6.31.31 PM.jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (1).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (2).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (3).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (4).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (5).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (6).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (7).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (8).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (9).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.33.58 PM.jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.33.58 PM (1).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.33.58 PM (2).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM.jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (1).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (2).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (3).jpeg",
-  "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (4).jpeg"
-];
-
-// ════════════════════════════════════════════════════
-//  GAME ENGINE
-// ════════════════════════════════════════════════════
-const TILE = 32;
-const WORLD_W = 300;   // tiles wide
-const WORLD_H = 80;    // tiles tall
-const VIEW_W = Math.ceil(window.innerWidth / TILE) + 2;
-const VIEW_H = Math.ceil(window.innerHeight / TILE) + 2;
-
-// Levels configuration
-let currentLevel = 0;
-const LEVELS = [
-  { name: "Meadow 🌱", themeColor: "#5d9e3f" },
-  { name: "Sky Cloud ☁️", themeColor: "#ffb3cc" },
-  { name: "Deep Caves 🔮", themeColor: "#ce93d8" },
-  { name: "Sunset Beach 🏖️", themeColor: "#f0e0b8" }
-];
-
-// Block IDs
-const B = {
-  AIR:0, GRASS:1, DIRT:2, STONE:3, DEEP_STONE:4, BEDROCK:5,
-  WOOD:6, LEAVES:7, LOVE_BRICK:8, HEART_GLASS:9, ROSE:10,
-  CHEST:11, DIAMOND_ORE:12, LOVE_ORE:13, GOLD_ORE:14, PHOTO_BLOCK:15,
-  WATER:16, SAND:17, CLOUD_BLOCK:18, PLANK:19, GLASS:20, FENCE:21,
-  PORTAL:22
-};
-
-// Block definitions
-const BLOCKS = {
-  [B.AIR]:       {name:'Air',       color:null,         solid:false, icon:'',    placeable:false},
-  [B.GRASS]:     {name:'Grass',     color:['#5d9e3f','#4a7e31','#6ab548'], solid:true, icon:'🟩', placeable:true},
-  [B.DIRT]:      {name:'Dirt',      color:['#8B5E3C','#6e4a2e','#9e6b45'], solid:true, icon:'🟫', placeable:true},
-  [B.STONE]:     {name:'Stone',     color:['#888','#666','#999'],           solid:true, icon:'⬜', placeable:true},
-  [B.DEEP_STONE]:{name:'Deep Stone',color:['#444','#333','#555'],           solid:true, icon:'🔲', placeable:true},
-  [B.BEDROCK]:   {name:'Bedrock',   color:['#222','#111','#2a2a2a'],        solid:true, icon:'⬛', placeable:false},
-  [B.WOOD]:      {name:'Wood Log',  color:['#6b4226','#4a2d15','#8B5E3C'], solid:true, icon:'🪵', placeable:true},
-  [B.LEAVES]:    {name:'Leaves',    color:['#2d7a1e','#1e5a12','#3d9c28'], solid:true, icon:'🌿', placeable:true},
-  [B.LOVE_BRICK]:{name:'Love Brick',color:['#ff6b9d','#d63d70','#ff9bbf'], solid:true, icon:'💗', placeable:true},
-  [B.HEART_GLASS]:{name:'Heart Glass',color:['#ff9bbf88','#e0608888','#ffb3cc88'],solid:true,icon:'🔮',placeable:true,transparent:true},
-  [B.ROSE]:      {name:'Rose',      color:['#e63950','#b01030','#ff6070'], solid:false,icon:'🌹',placeable:true},
-  [B.CHEST]:     {name:'Memory Chest',color:['#8B5E3C','#5a3a1a','#c49a6c'],solid:true,icon:'📦',placeable:true,special:'chest'},
-  [B.DIAMOND_ORE]:{name:'Diamond Ore',color:['#888','#666','#4fc3f7'],     solid:true,icon:'💎',placeable:true,special:'diamond'},
-  [B.LOVE_ORE]:  {name:'Love Ore',  color:['#888','#ff6b9d','#999'],       solid:true,icon:'💗',placeable:true,special:'love'},
-  [B.GOLD_ORE]:  {name:'Gold Ore',  color:['#888','#ffd700','#999'],       solid:true,icon:'⭐',placeable:true,special:'gold'},
-  [B.PHOTO_BLOCK]:{name:'Photo Gem',color:['#9c27b0','#6a0080','#ce93d8'], solid:true,icon:'📸',placeable:true,special:'photo'},
-  [B.WATER]:     {name:'Water',     color:['#1e90ff88','#0066cc88','#64b5f688'],solid:false,icon:'💧',placeable:true,transparent:true},
-  [B.SAND]:      {name:'Sand',      color:['#e8d5a3','#c9b98a','#f0e0b8'], solid:true, icon:'🟡',placeable:true},
-  [B.CLOUD_BLOCK]:{name:'Cloud',    color:['#ffffff','#e8e8e8','#f8f8f8'], solid:true, icon:'☁️', placeable:true},
-  [B.PLANK]:     {name:'Wood Plank',color:['#a0712a','#7a5218','#c49a50'], solid:true, icon:'🟧',placeable:true},
-  [B.GLASS]:     {name:'Glass',     color:['#aaddff44','#88bbdd44','#cceeff44'],solid:true,icon:'🔲',placeable:true,transparent:true},
-  [B.FENCE]:     {name:'Fence',     color:['#8B5E3C','#6e4a2e','#a07040'], solid:false,icon:'🟫',placeable:true,fence:true},
-  [B.PORTAL]:    {name:'Love Portal',color:['#e040fb','#8e24aa','#f3e5f5'], solid:false,icon:'🔮',placeable:true,transparent:true,special:'portal'}
-};
-
-// Hotbar slots
-const HOTBAR = [
-  B.LOVE_BRICK, B.GRASS, B.DIRT, B.STONE, B.WOOD, B.PLANK, B.HEART_GLASS, B.CHEST
-];
-
-// ── Canvas setup ──
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-const pCanvas = document.getElementById('particleCanvas');
-const pCtx = pCanvas.getContext('2d');
-const mmCanvas = document.getElementById('minimap');
-const mmCtx = mmCanvas.getContext('2d');
-
-function resizeCanvases() {
-  canvas.width = pCanvas.width = window.innerWidth;
-  canvas.height = pCanvas.height = window.innerHeight;
-}
-resizeCanvases();
-window.addEventListener('resize', resizeCanvases);
-
-// ── World ──
-let world = new Uint8Array(WORLD_W * WORLD_H);
-let secrets = {};
-
-function wi(c,r){ return r*WORLD_W+c; }
-function getBlock(c,r){ if(c<0||c>=WORLD_W||r<0||r>=WORLD_H) return B.BEDROCK; return world[wi(c,r)]; }
-function setBlock(c,r,id){ if(c<0||c>=WORLD_W||r<0||r>=WORLD_H) return; world[wi(c,r)]=id; }
-
-function generateWorld() {
-  // Clear world
-  world.fill(B.AIR);
-  secrets = {};
-
-  if (currentLevel === 0) {
-    // 🌸 Level 1: Spring Meadow
-    const surface = [];
-    let h = 40;
-    for (let c = 0; c < WORLD_W; c++) {
-      h += (Math.random()-0.5)*2.5;
-      h = Math.max(30, Math.min(52, h));
-      surface[c] = Math.round(h);
-    }
-    for (let c = 0; c < WORLD_W; c++) {
-      const s = surface[c];
-      for (let r = 0; r < WORLD_H; r++) {
-        if (r < s-1)       setBlock(c,r,B.AIR);
-        else if (r === s-1) setBlock(c,r,B.GRASS);
-        else if (r < s+4)  setBlock(c,r,B.DIRT);
-        else if (r < s+14) setBlock(c,r,B.STONE);
-        else if (r < WORLD_H-1) setBlock(c,r,B.DEEP_STONE);
-        else               setBlock(c,r,B.BEDROCK);
-      }
-    }
-    // Trees
-    for (let c = 5; c < WORLD_W-5; c += 7+Math.floor(Math.random()*8)) {
-      const s = surface[c];
-      const th = 4+Math.floor(Math.random()*3);
-      for (let i = 0; i < th; i++) setBlock(c, s-2-i, B.WOOD);
-      for (let dr=-2;dr<=2;dr++) for (let dc=-2;dc<=2;dc++) {
-        if (Math.abs(dr)+Math.abs(dc)<=3 && getBlock(c+dc,s-2-th+dr)===B.AIR)
-          setBlock(c+dc, s-2-th+dr, B.LEAVES);
-      }
-    }
-    // Roses
-    for (let c = 2; c < WORLD_W-2; c++) {
-      const s = surface[c];
-      if (Math.random()<0.06 && getBlock(c,s-2)===B.AIR) setBlock(c,s-2,B.ROSE);
-    }
-    // Sand
-    for (let i = 0; i < 8; i++) {
-      const cc = 10+Math.floor(Math.random()*(WORLD_W-20));
-      const s = surface[cc];
-      for (let dc=-3;dc<=3;dc++) if (getBlock(cc+dc,s-1)===B.GRASS || getBlock(cc+dc,s-1)===B.DIRT) setBlock(cc+dc,s-1,B.SAND);
-    }
-    // Pre-built love cabin near spawn
-    buildLoveCabin(Math.floor(WORLD_W/2), surface[Math.floor(WORLD_W/2)]-2);
-
-    // Place Photo Gems on the surface near the Cabin spawn for instant visibility!
-    const cabinX = Math.floor(WORLD_W/2);
-    setBlock(cabinX + 6, surface[cabinX+6] - 2, B.PHOTO_BLOCK);
-    secrets[`${cabinX + 6},${surface[cabinX+6] - 2}`] = {type:'photo', used:false};
-    setBlock(cabinX - 6, surface[cabinX-6] - 2, B.PHOTO_BLOCK);
-    secrets[`${cabinX - 6},${surface[cabinX-6] - 2}`] = {type:'photo', used:false};
-
-    // Portal to Next Level
-    const spawnC = Math.floor(WORLD_W/2) + 12;
-    const portalY = surface[spawnC] - 2;
-    setBlock(spawnC, portalY, B.PORTAL);
-    secrets[`${spawnC},${portalY}`] = {type:'portal', used:false};
-
-    // Underground ores & secrets
-    for (let i = 0; i < 40; i++) placeTreasure(B.LOVE_ORE, 'love', 3, 8);
-    for (let i = 0; i < 20; i++) placeTreasure(B.DIAMOND_ORE, 'diamond', 5, 12);
-    for (let i = 0; i < 30; i++) placeTreasure(B.GOLD_ORE, 'gold', 4, 10);
-    for (let i = 0; i < 15; i++) placeTreasure(B.PHOTO_BLOCK, 'photo', 6, 14);
-    for (let i = 0; i < 10; i++) placeTreasure(B.CHEST, 'chest', 3, 10);
-
-  } else if (currentLevel === 1) {
-    // ☁️ Level 2: Cloud Kingdom (Sky Islands)
-    // Create sky islands
-    for (let i = 0; i < 15; i++) {
-      const cx = 15 + Math.floor(Math.random() * (WORLD_W - 30));
-      const cy = 25 + Math.floor(Math.random() * 20);
-      const radX = 8 + Math.floor(Math.random() * 12);
-      const radY = 3 + Math.floor(Math.random() * 4);
-      for (let c = cx - radX; c <= cx + radX; c++) {
-        for (let r = cy - radY; r <= cy + radY; r++) {
-          if (c < 0 || c >= WORLD_W || r < 0 || r >= WORLD_H) continue;
-          const dist = (c - cx) * (c - cx) / (radX * radX) + (r - cy) * (r - cy) / (radY * radY);
-          if (dist <= 1.0) {
-            setBlock(c, r, r === cy - radY ? B.CLOUD_BLOCK : B.HEART_GLASS);
-          }
-        }
-      }
-      // Place treasures/portals
-      if (Math.random() < 0.6) {
-        setBlock(cx, cy - radY - 1, B.CHEST);
-        secrets[`${cx},${cy-radY-1}`] = {type:'chest', used:false};
-      }
-      if (Math.random() < 0.5) {
-        setBlock(cx - 3, cy - radY - 1, B.PHOTO_BLOCK);
-        secrets[`${cx-3},${cy-radY-1}`] = {type:'photo', used:false};
-      }
-      if (Math.random() < 0.4) {
-        setBlock(cx + 3, cy - radY - 1, B.PORTAL);
-        secrets[`${cx+3},${cy-radY-1}`] = {type:'portal', used:false};
-      }
-    }
-    // Solid cloud foundation at spawn
-    const spawnC = Math.floor(WORLD_W/2);
-    for (let c = spawnC - 15; c <= spawnC + 15; c++) {
-      for (let r = 40; r <= 44; r++) {
-        setBlock(c, r, r === 40 ? B.CLOUD_BLOCK : B.GLASS);
-      }
-    }
-    setBlock(spawnC + 5, 39, B.PORTAL);
-    secrets[`${spawnC+5},39`] = {type:'portal', used:false};
-
-    // Bedrock at the very bottom
-    for (let c = 0; c < WORLD_W; c++) setBlock(c, WORLD_H-1, B.BEDROCK);
-
-  } else if (currentLevel === 2) {
-    // 🔮 Level 3: Deep Crystal Caves
-    for (let c = 0; c < WORLD_W; c++) {
-      for (let r = 0; r < WORLD_H; r++) {
-        if (r === 0) setBlock(c, r, B.AIR);
-        else if (r < 15) setBlock(c, r, B.STONE);
-        else if (r < WORLD_H-1) setBlock(c, r, B.DEEP_STONE);
-        else setBlock(c, r, B.BEDROCK);
-      }
-    }
-    // Carve tunnels
-    for (let i = 0; i < 16; i++) {
-      let cx = Math.floor(Math.random() * WORLD_W);
-      let cy = 10 + Math.floor(Math.random() * (WORLD_H - 20));
-      for (let step = 0; step < 120; step++) {
-        const r = 4 + Math.floor(Math.random() * 3);
-        for (let dc = -r; dc <= r; dc++) {
-          for (let dr = -r; dr <= r; dr++) {
-            if (dc*dc + dr*dr <= r*r) setBlock(cx + dc, cy + dr, B.AIR);
-          }
-        }
-        cx += Math.round((Math.random() - 0.5) * 4);
-        cy += Math.round((Math.random() - 0.5) * 3);
-        if (cx < 5) cx = 5; if (cx >= WORLD_W - 5) cx = WORLD_W - 5;
-        if (cy < 5) cy = 5; if (cy >= WORLD_H - 5) cy = WORLD_H - 5;
-      }
-    }
-    // Solid starting room around spawn
-    const spawnC = Math.floor(WORLD_W/2);
-    for (let c = spawnC - 8; c <= spawnC + 8; c++) {
-      for (let r = 35; r <= 42; r++) setBlock(c, r, B.AIR);
-    }
-    for (let c = spawnC - 8; c <= spawnC + 8; c++) setBlock(c, 43, B.STONE);
-    
-    setBlock(spawnC - 5, 42, B.CHEST);
-    secrets[`${spawnC-5},42`] = {type:'chest', used:false};
-
-    setBlock(spawnC + 5, 42, B.PORTAL);
-    secrets[`${spawnC+5},42`] = {type:'portal', used:false};
-
-    // Plant lots of glowing gems
-    for (let i = 0; i < 40; i++) placeTreasure(B.LOVE_ORE, 'love', 5, 20);
-    for (let i = 0; i < 30; i++) placeTreasure(B.DIAMOND_ORE, 'diamond', 5, 20);
-    for (let i = 0; i < 20; i++) placeTreasure(B.PHOTO_BLOCK, 'photo', 5, 20);
-
-  } else if (currentLevel === 3) {
-    // 🏖️ Level 4: Sunset Beach
-    const surfaceY = 44;
-    for (let c = 0; c < WORLD_W; c++) {
-      const isWater = c > 180;
-      for (let r = 0; r < WORLD_H; r++) {
-        if (r < surfaceY) {
-          if (isWater && r >= surfaceY - 8) setBlock(c, r, B.WATER);
-          else setBlock(c, r, B.AIR);
-        } else if (r === surfaceY) {
-          setBlock(c, r, B.SAND);
-        } else if (r < surfaceY + 6) {
-          setBlock(c, r, B.SAND);
-        } else if (r < surfaceY + 16) {
-          setBlock(c, r, B.STONE);
-        } else if (r < WORLD_H-1) {
-          setBlock(c, r, B.DEEP_STONE);
-        } else {
-          setBlock(c, r, B.BEDROCK);
-        }
-      }
-    }
-
-    // palm trees
-    for (let c = 10; c < 170; c += 15 + Math.floor(Math.random() * 15)) {
-      const th = 6 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < th; i++) {
-        const lean = Math.floor(i / 3);
-        setBlock(c + lean, surfaceY - 1 - i, B.WOOD);
-        if (i === th - 1) {
-          const lc = c + lean;
-          const ly = surfaceY - 1 - i;
-          setBlock(lc, ly - 1, B.LEAVES);
-          setBlock(lc - 1, ly, B.LEAVES);
-          setBlock(lc + 1, ly, B.LEAVES);
-          setBlock(lc - 2, ly + 1, B.LEAVES);
-          setBlock(lc + 2, ly + 1, B.LEAVES);
-        }
-      }
-    }
-
-    // Portal back to Meadow
-    const spawnC = Math.floor(WORLD_W/2);
-    setBlock(spawnC - 10, surfaceY - 1, B.PORTAL);
-    secrets[`${spawnC-10},${surfaceY-1}`] = {type:'portal', used:false};
-
-    // Ores and secrets
-    for (let i = 0; i < 30; i++) placeTreasure(B.LOVE_ORE, 'love', 2, 8);
-    for (let i = 0; i < 20; i++) placeTreasure(B.DIAMOND_ORE, 'diamond', 4, 10);
-    for (let i = 0; i < 15; i++) placeTreasure(B.PHOTO_BLOCK, 'photo', 4, 10);
-  }
-
-  // Put player in a safe spot
-  player.vx = 0; player.vy = 0;
-  player.x = WORLD_W / 2 * TILE;
-  let foundY = 30;
-  for (let r = 0; r < WORLD_H; r++) {
-    const b = getBlock(Math.floor(WORLD_W/2), r);
-    if (b !== B.AIR && b !== B.WATER && b !== B.LEAVES) {
-      foundY = r;
-      break;
-    }
-  }
-  player.y = (foundY - 2) * TILE;
-}
-
-function placeTreasure(blockId, secretType, minDepth, maxDepth) {
-  for (let tries = 0; tries < 50; tries++) {
-    const c = 2+Math.floor(Math.random()*(WORLD_W-4));
-    const r = Math.floor(Math.random()*(WORLD_H-minDepth-4))+minDepth+20;
-    if (r >= WORLD_H-1) continue;
-    const cur = getBlock(c,r);
-    if (cur===B.STONE||cur===B.DEEP_STONE||cur===B.DIRT||cur===B.SAND||cur===B.CLOUD_BLOCK) {
-      setBlock(c,r,blockId);
-      secrets[`${c},${r}`] = {type:secretType, used:false};
-      break;
-    }
-  }
-}
-
-function buildLoveCabin(cx, groundY) {
-  // Floor
-  for (let x=cx-4;x<=cx+4;x++) setBlock(x,groundY+1,B.PLANK);
-  // Walls
-  for (let y=groundY;y>=groundY-4;y--) {
-    setBlock(cx-4,y,B.LOVE_BRICK);
-    setBlock(cx+4,y,B.LOVE_BRICK);
-  }
-  // Back wall
-  for (let x=cx-4;x<=cx+4;x++) setBlock(x,groundY-4,B.LOVE_BRICK);
-  // Roof (heart shape attempt)
-  for (let x=cx-5;x<=cx+5;x++) setBlock(x,groundY-5,B.LOVE_BRICK);
-  // Windows
-  setBlock(cx-2,groundY-2,B.HEART_GLASS);
-  setBlock(cx+2,groundY-2,B.HEART_GLASS);
-  // Door opening
-  setBlock(cx,groundY,B.AIR);
-  setBlock(cx,groundY-1,B.AIR);
-  // Interior chest
-  setBlock(cx-2,groundY,B.CHEST);
-  secrets[`${cx-2},${groundY}`] = {type:'chest',used:false};
-  // Interior roses
-  setBlock(cx+2,groundY,B.ROSE);
-  // Sign above door (love brick)
-  setBlock(cx,groundY-5,B.LOVE_BRICK);
-  // Chimney
-  for (let y=groundY-6;y>=groundY-8;y--) setBlock(cx+3,y,B.STONE);
-}
-
-// ── Player ──
-const player = {
-  x: WORLD_W/2*TILE,
-  y: 38*TILE,
-  vx: 0, vy: 0,
-  w: 20, h: 28,
-  onGround: false,
-  facing: 1,
-  animT: 0,
-  sprinting: false,
-  hp: 10,
-  maxHp: 10,
-};
-
-const GRAVITY = 0.45;
-const JUMP_FORCE = -9;
-const WALK_SPEED = 3.5;
-const SPRINT_MULT = 1.6;
-
-let camX = 0, camY = 0;
-let selectedSlot = 0;
-let buildMode = false;
-let gameTime = 0; // ticks
-let dayCount = 1;
-let totalFinds = 0;
-let blocksPlaced = 0;
-let usedQuoteIdx = [];
-let quoteText = LOVE_QUOTES[0];
-let quotePos = 0;
-let gameRunning = false;
-
-// Input
-const keys = {};
-let mouseX = 0, mouseY = 0;
-let leftClick = false, rightClick = false;
-let lastDig = 0, lastPlace = 0;
-
-document.addEventListener('keydown', e => {
-  keys[e.code] = true;
-  if (e.code==='KeyE' && gameRunning) toggleInventory();
-  if (e.code==='KeyR' && gameRunning) { buildMode=!buildMode; updateModeDisplay(); }
-  if (e.code==='Escape') { closePopup(); document.getElementById('inventory').classList.remove('open'); }
-  for (let i=0;i<8;i++) if (e.code===`Digit${i+1}`) { selectedSlot=i; updateHotbar(); }
-  if (e.code==='Space') e.preventDefault();
-});
-document.addEventListener('keyup', e => keys[e.code]=false);
-
-canvas.addEventListener('mousemove', e => { mouseX=e.clientX; mouseY=e.clientY; });
-canvas.addEventListener('mousedown', e => {
-  if (e.button===0) leftClick=true;
-  if (e.button===2) rightClick=true;
-  e.preventDefault();
-});
-canvas.addEventListener('mouseup', e => {
-  if (e.button===0) leftClick=false;
-  if (e.button===2) rightClick=false;
-});
-canvas.addEventListener('contextmenu', e => e.preventDefault());
-canvas.addEventListener('wheel', e => {
-  selectedSlot=(selectedSlot+(e.deltaY>0?1:-1)+8)%8;
-  updateHotbar();
-});
-
-// ── Physics ──
-function collides(x,y) {
-  const c1=Math.floor(x/TILE), r1=Math.floor(y/TILE);
-  const c2=Math.floor((x+player.w-1)/TILE), r2=Math.floor((y+player.h-1)/TILE);
-  for (let c=c1;c<=c2;c++) for (let r=r1;r<=r2;r++) {
-    const b=getBlock(c,r);
-    if (BLOCKS[b] && BLOCKS[b].solid && !BLOCKS[b].transparent) return true;
-  }
-  return false;
-}
-
-function updatePlayer(dt) {
-  const sp = WALK_SPEED * (player.sprinting?SPRINT_MULT:1);
-  player.vx = 0;
-
-  if (keys['ArrowLeft']||keys['KeyA']) { player.vx=-sp; player.facing=-1; }
-  if (keys['ArrowRight']||keys['KeyD']) { player.vx=sp; player.facing=1; }
-  if ((keys['ArrowUp']||keys['KeyW']||keys['Space']) && player.onGround) {
-    player.vy = JUMP_FORCE;
-    player.onGround = false;
-  }
-  player.sprinting = keys['ShiftLeft']||keys['ShiftRight'];
-
-  player.vy += GRAVITY;
-  player.vy = Math.min(player.vy, 18);
-
-  // X movement
-  player.x += player.vx;
-  if (collides(player.x, player.y)) player.x -= player.vx;
-  player.x = Math.max(0, Math.min(player.x, (WORLD_W-1)*TILE));
-
-  // Y movement
-  player.y += player.vy;
-  if (player.vy>0 && collides(player.x, player.y)) {
-    while (collides(player.x, player.y)) player.y--;
-    player.vy=0; player.onGround=true;
-  } else if (player.vy<0 && collides(player.x, player.y)) {
-    while (collides(player.x, player.y)) player.y++;
-    player.vy=0;
-  } else {
-    player.onGround = false;
-  }
-  // Check ground
-  if (!player.onGround) {
-    const testY = player.y+player.h+1;
-    const c1=Math.floor(player.x/TILE), c2=Math.floor((player.x+player.w-1)/TILE);
-    for (let c=c1;c<=c2;c++) {
-      const b=getBlock(c,Math.floor(testY/TILE));
-      if (BLOCKS[b]&&BLOCKS[b].solid&&!BLOCKS[b].transparent) { player.onGround=true; break; }
-    }
-  }
-
-  // Void Fall Protection: Teleport player back safely
-  if (player.y > (WORLD_H - 1) * TILE) {
-    player.vx = 0; player.vy = 0;
-    player.x = WORLD_W / 2 * TILE;
-    let foundY = 30;
-    for (let r = 0; r < WORLD_H; r++) {
-      const b = getBlock(Math.floor(WORLD_W/2), r);
-      if (b !== B.AIR && b !== B.WATER && b !== B.LEAVES && b !== B.BEDROCK) {
-        foundY = r;
-        break;
-      }
-    }
-    player.y = (foundY - 2) * TILE;
-    spawnLoveParticles(canvas.width / 2, canvas.height / 2);
-  }
-
-  // Portal Touching Auto-Advance
-  const pc = Math.floor((player.x + player.w/2) / TILE);
-  const pr = Math.floor((player.y + player.h/2) / TILE);
-  if (getBlock(pc, pr) === B.PORTAL || getBlock(pc, pr + 1) === B.PORTAL) {
-    nextLevel();
-  }
-
-  if (player.vx!==0) player.animT++;
-
-  // Camera
-  camX = player.x - canvas.width/2 + player.w/2;
-  camY = player.y - canvas.height/2 + player.h/2;
-  camX = Math.max(0, Math.min(camX, WORLD_W*TILE-canvas.width));
-  camY = Math.max(0, Math.min(camY, WORLD_H*TILE-canvas.height));
-
-  document.getElementById('coordDisplay').textContent = `X:${Math.floor(player.x/TILE)} Y:${Math.floor(player.y/TILE)}`;
-}
-
-// ── Digging / Placing ──
-function getTargetBlock() {
-  const wx = mouseX+camX, wy = mouseY+camY;
-  const tc = Math.floor(wx/TILE), tr = Math.floor(wy/TILE);
-  const pc = Math.floor(player.x/TILE), pr = Math.floor(player.y/TILE);
-  if (Math.abs(tc-pc)<=5 && Math.abs(tr-pr)<=5) return [tc,tr];
-  return null;
-}
-
-function handleDig() {
-  if (document.getElementById('inventory').classList.contains('open')) return;
-  const now = performance.now();
-  if (now-lastDig < 180) return;
-  const t = getTargetBlock(); if(!t) return;
-  const [c,r] = t;
-  const b = getBlock(c,r);
-  if (!b || b===B.BEDROCK) return;
-  lastDig = now;
-
-  spawnBreakParticles(c*TILE+TILE/2, r*TILE+TILE/2, b);
-  setBlock(c,r,B.AIR);
-
-  const key=`${c},${r}`;
-  if (secrets[key]&&!secrets[key].used) {
-    secrets[key].used=true;
-    setTimeout(()=>revealSecret(secrets[key].type), 400);
-  }
-}
-
-function handlePlace() {
-  if (document.getElementById('inventory').classList.contains('open')) return;
-  const now = performance.now();
-  if (now-lastPlace < 200) return;
-  const t = getTargetBlock(); if(!t) return;
-  const [c,r] = t;
-  if (getBlock(c,r)!==B.AIR) return;
-
-  // Don't place inside player
-  const px=Math.floor(player.x/TILE), py=Math.floor(player.y/TILE);
-  if ((c===px||c===px)&&(r===py||r===py+1)) return;
-
-  lastPlace = now;
-  const blockId = HOTBAR[selectedSlot];
-  if (!BLOCKS[blockId]||!BLOCKS[blockId].placeable) return;
-  setBlock(c,r,blockId);
-
-  if (blockId===B.LOVE_BRICK || blockId===B.HEART_GLASS) spawnLoveParticles(c*TILE+TILE/2,r*TILE+TILE/2);
-  blocksPlaced++;
-  document.getElementById('blockCount').textContent = blocksPlaced;
-}
-
-// ── Rendering ──
-function drawSky() {
-  const t = (gameTime%1200)/1200; // 0=dawn,0.25=noon,0.5=dusk,0.75=night
-  let c1,c2,c3;
-
-  if (currentLevel === 0) {
-    // 🌸 Level 1: Meadow
-    if (t<0.25) {      // dawn
-      c1=lerpColor('#1a1a3a','#ff9966',t*4);
-      c2=lerpColor('#2d0a3a','#ffcc99',t*4);
-      c3='rgba(255,200,150,0.3)';
-    } else if (t<0.5) { // day
-      c1=lerpColor('#ff9966','#87CEEB',(t-0.25)*4);
-      c2=lerpColor('#ffcc99','#b0dfff',(t-0.25)*4);
-      c3='transparent';
-    } else if (t<0.75) { // dusk
-      c1=lerpColor('#87CEEB','#1a1a3a',(t-0.5)*4);
-      c2=lerpColor('#b0dfff','#2d0a3a',(t-0.5)*4);
-      c3='rgba(255,150,80,0.3)';
-    } else {            // night
-      c1='#0a0a1a'; c2='#1a1a3a'; c3='transparent';
-    }
-  } else if (currentLevel === 1) {
-    // ☁️ Level 2: Cloud Kingdom (Beautiful continuous pink-purple sky)
-    c1=lerpColor('#aee2ff','#ffc0e0',Math.sin(gameTime*0.01)*0.5+0.5);
-    c2=lerpColor('#ffd0f5','#ffffff',Math.sin(gameTime*0.015)*0.5+0.5);
-    c3='rgba(255,255,255,0.4)';
-  } else if (currentLevel === 2) {
-    // 🔮 Level 3: Deep caves (dark deep purple/neon background)
-    c1='#0b0314';
-    c2='#1a092a';
-    c3='rgba(230,80,255,0.05)';
-  } else if (currentLevel === 3) {
-    // 🏖️ Level 4: Sunset Beach (Continuous warm sunset colors)
-    c1=lerpColor('#ff5e36','#ffa834',Math.sin(gameTime*0.005)*0.5+0.5);
-    c2=lerpColor('#ffa834','#ff5e36',Math.sin(gameTime*0.005)*0.5+0.5);
-    c3='rgba(255,210,120,0.35)';
-  }
-
-  const grad=ctx.createLinearGradient(0,0,0,canvas.height);
-  grad.addColorStop(0,c1); grad.addColorStop(1,c2);
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // Stars at night (or inside cave/sky dimensions)
-  if (t>0.65||t<0.1||currentLevel===1||currentLevel===2) {
-    const starAlpha = currentLevel===2?0.8:currentLevel===1?0.5:t>0.75?0.9:t>0.65?(t-0.65)/0.1*0.9:t<0.05?t/0.05*0.9:0.9;
-    ctx.fillStyle=`rgba(255,200,220,${starAlpha})`;
-    for (let i=0;i<80;i++) {
-      const sx=(i*137.508+camX*0.02)%canvas.width;
-      const sy=(i*89.3+camY*0.01)%200;
-      ctx.fillRect(sx,sy,i%3===0?2:1,i%3===0?2:1);
-    }
-    // Moon
-    if (currentLevel!==2) {
-      const mx=canvas.width*0.8-camX*0.01;
-      ctx.fillStyle='rgba(255,240,200,0.9)';
-      ctx.beginPath(); ctx.arc(mx,60,18,0,Math.PI*2); ctx.fill();
-      ctx.fillStyle='rgba(255,200,220,0.3)';
-      ctx.font='8px serif'; ctx.textAlign='center';
-      ctx.fillText('💕',mx,64);
-    }
-  }
-
-  // Sun / love-heart sun (only for beach and meadow day)
-  if ((currentLevel===0||currentLevel===3) && t<0.65&&t>0.1) {
-    const sunX=canvas.width*(t-0.1)/0.55;
-    const sunY=canvas.height*0.15 - Math.sin((t-0.1)/0.55*Math.PI)*canvas.height*0.12;
-    ctx.font='28px serif'; ctx.textAlign='center';
-    ctx.fillText(currentLevel===3?'🌇':(t>0.45?'🌇':'☀️'),sunX,sunY);
-  }
-
-  // Clouds (mostly sky/beach levels)
-  if (currentLevel !== 2) {
-    for (let i=0;i<8;i++) {
-      const cx2=((i*400-gameTime*0.3+camX*0.1)%((WORLD_W+10)*TILE))-TILE;
-      const cy2=40+Math.sin(i*2.1)*30;
-      if (cx2-camX<-80||cx2-camX>canvas.width+80) continue;
-      ctx.fillStyle=currentLevel===1?'rgba(255,240,248,0.85)':'rgba(255,255,255,0.75)';
-      const sx=cx2-camX, sy=cy2-camY*0.1;
-      if (sy<0||sy>canvas.height*0.5) continue;
-      ctx.fillRect(sx,sy,70,18);
-      ctx.fillRect(sx+10,sy-10,50,16);
-      ctx.fillRect(sx+20,sy-18,30,14);
-      if (i%3===0) { ctx.font='10px serif'; ctx.fillText('💗',sx+35,sy+14); }
-    }
-  }
-
-  // Falling hearts (love rain) sometimes
-  if (t>0.72||currentLevel===1||currentLevel===2) {
-    ctx.fillStyle='rgba(255,100,160,0.5)';
-    for (let i=0;i<12;i++) {
-      const hx=((i*173+gameTime*1.2)%canvas.width);
-      const hy=((i*91+gameTime*2.1)%canvas.height);
-      ctx.font='8px serif'; ctx.fillText('💕',hx,hy);
-    }
-  }
-}
-
-function drawBlock(c,r) {
-  const id=getBlock(c,r);
-  if (id===B.AIR) return;
-  const def=BLOCKS[id]; if(!def||!def.color) return;
-  const x=c*TILE-camX, y=r*TILE-camY;
-  if (x<-TILE||x>canvas.width+TILE||y<-TILE||y>canvas.height+TILE) return;
-
-  const col=def.color;
-
-  // Transparent blocks
-  if (def.transparent) {
-    ctx.globalAlpha=0.55;
-    ctx.fillStyle=col[0];
-    ctx.fillRect(x,y,TILE,TILE);
-    ctx.globalAlpha=1;
-    if (id===B.HEART_GLASS) {
-      ctx.font='14px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText('💗',x+TILE/2,y+TILE/2);
-    }
-    return;
-  }
-
-  // Fence
-  if (def.fence) {
-    ctx.fillStyle=col[0];
-    ctx.fillRect(x+TILE/2-3,y,6,TILE);
-    ctx.fillRect(x+4,y+6,TILE-8,5);
-    ctx.fillRect(x+4,y+18,TILE-8,5);
-    return;
-  }
-
-  // Base color
-  ctx.fillStyle=col[0];
-  ctx.fillRect(x,y,TILE,TILE);
-
-  // Highlight top-left
-  ctx.fillStyle=col[2];
-  ctx.fillRect(x,y,TILE,2);
-  ctx.fillRect(x,y,2,TILE);
-
-  // Shadow bottom-right
-  ctx.fillStyle=col[1];
-  ctx.fillRect(x,y+TILE-2,TILE,2);
-  ctx.fillRect(x+TILE-2,y,2,TILE);
-
-  // Texture
-  ctx.fillStyle=col[1];
-  for (let i=0;i<5;i++) {
-    const tx=x+3+(i%3)*9+(i>2?4:0);
-    const ty=y+4+Math.floor(i/3)*14;
-    ctx.fillRect(tx,ty,4,3);
-  }
-
-  // Special icons / overlays
-  ctx.font='13px serif';
-  ctx.textAlign='center'; ctx.textBaseline='middle';
-  if (id===B.LOVE_BRICK)  { ctx.fillText('💗',x+TILE/2,y+TILE/2); }
-  else if (id===B.ROSE)   { ctx.font='18px serif'; ctx.fillText('🌹',x+TILE/2,y+TILE/2); }
-  else if (id===B.CHEST)  { ctx.fillText('📦',x+TILE/2,y+TILE/2); }
-  else if (id===B.DIAMOND_ORE){ ctx.fillText('💎',x+TILE/2,y+TILE/2); }
-  else if (id===B.LOVE_ORE)  { ctx.fillText('💗',x+TILE/2,y+TILE/2); }
-  else if (id===B.GOLD_ORE)  { ctx.fillText('⭐',x+TILE/2,y+TILE/2); }
-  else if (id===B.PHOTO_BLOCK){ ctx.fillText('📸',x+TILE/2,y+TILE/2); }
-  else if (id===B.LEAVES) { ctx.fillStyle='rgba(80,180,60,0.3)'; ctx.fillRect(x,y,TILE,TILE); }
-  else if (id===B.WOOD)   {
-    ctx.fillStyle='rgba(0,0,0,0.1)';
-    for(let i=4;i<TILE;i+=8) ctx.fillRect(x,y+i,TILE,1);
-  }
-}
-
-function drawPlayer() {
-  const px=player.x-camX, py=player.y-camY;
-  const bob=player.onGround?Math.sin(player.animT*0.18)*2:0;
-  const flip=player.facing<0?-1:1;
-
-  ctx.save();
-  ctx.translate(px+player.w/2, py);
-  ctx.scale(flip,1);
-
-  const bx=-player.w/2;
-
-  // 1. Soft Dynamic Shadow
-  ctx.fillStyle='rgba(0,0,0,0.16)';
-  ctx.fillRect(bx+2,player.h+bob,player.w-4,3);
-
-  // 2. High-Waisted Blue Denim Jeans & White Sneakers
-  const legSwing = player.vx!==0&&player.onGround?Math.sin(player.animT*0.25)*5:0;
-  
-  // Denim jeans base color (`#3a5fa0`)
-  ctx.fillStyle='#3a5fa0';
-  ctx.fillRect(bx+2,14+bob,6,11);
-  ctx.fillRect(bx+12,14+bob-legSwing,6,11+legSwing);
-  
-  // Denim wash highlights for texture (`#5c85c1`)
-  ctx.fillStyle='#5c85c1';
-  ctx.fillRect(bx+3,16+bob,2,6);
-  ctx.fillRect(bx+13,16+bob-legSwing,2,6);
-
-  // Dark belt with a shiny gold buckle
-  ctx.fillStyle='#1e1e1e'; // dark belt
-  ctx.fillRect(bx+2,13+bob,16,1);
-  ctx.fillStyle='#ffd700'; // gold buckle
-  ctx.fillRect(bx+9,12+bob,2,2);
-
-  // platform white sneakers
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+1,25+bob,7,3);
-  ctx.fillRect(bx+11,25-legSwing+bob,7,3);
-  ctx.fillStyle='#e06b53'; // peach sneaker sole
-  ctx.fillRect(bx+1,28+bob,7,1);
-  ctx.fillRect(bx+11,28-legSwing+bob,7,1);
-
-  // 3. LAYERED FLOWING BROWNISH HAIR (BACK) - waist-length with active wind sway!
-  const hairSway = Math.sin(gameTime * 0.08) * 2;
-  ctx.fillStyle='#8d583c'; // beautiful rich warm milk-chocolate brown base
-  ctx.fillRect(bx+1+hairSway,bob-3,18,22);
-  
-  // Chestnut and honey highlights strands (Back)
-  ctx.fillStyle='#5c351f'; // lowlights
-  ctx.fillRect(bx+2+hairSway,bob+2,3,16);
-  ctx.fillRect(bx+15+hairSway,bob+2,3,16);
-  ctx.fillStyle='#c59b6d'; // glowing golden-honey highlights
-  ctx.fillRect(bx+4+hairSway,bob+5,2,11);
-  ctx.fillRect(bx+14+hairSway,bob+5,2,11);
-
-  // 4. Stylish Crop Top (Sky-blue)
-  ctx.fillStyle='#aee2ff'; // Crop-top
-  ctx.fillRect(bx+3,6+bob,14,6);
-  
-  // Fine spaghetti shoulder straps (white)
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+4,5+bob,1,1);
-  ctx.fillRect(bx+15,5+bob,1,1);
-
-  // Exposed cute midriff
-  ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+3,12+bob,14,1);
-
-  // 5. Silver Chain & Heart Gem Necklace
-  ctx.fillStyle='#fcd4b9'; // neck
-  ctx.fillRect(bx+7,4+bob,6,2);
-  // Elegant black choker
-  ctx.fillStyle='#1e1e1e';
-  ctx.fillRect(bx+7,5+bob,6,1);
-  // Glistening silver chain + shiny pink heart diamond pendant
-  ctx.fillStyle='#d5d9e0'; // silver chain link
-  ctx.fillRect(bx+8,7+bob,4,1);
-  ctx.fillStyle='#ff6b9d'; // glowing pink gemstone
-  ctx.fillRect(bx+9,8+bob,2,2);
-
-  // Slender arms
-  const armSwing=player.vx!==0&&player.onGround?Math.sin(player.animT*0.25)*6:0;
-  ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+0,7+bob+armSwing,3,9);
-  ctx.fillRect(bx+17,7+bob-armSwing,3,9);
-
-  // 6. Pretty Face & Head
-  ctx.fillStyle='#fcd4b9'; 
-  ctx.fillRect(bx+3,bob-8,14,13);
-
-  // HAIR FRAMING & LUSH FRINGE (FRONT) - long side locks
-  ctx.fillStyle='#8d583c'; // beautiful rich warm milk-chocolate brown base
-  ctx.fillRect(bx+2,bob-9,16,5); // crown
-  // Long side locks flowing down past her waist
-  ctx.fillRect(bx+1+hairSway*0.6,bob-4,3,20);
-  ctx.fillRect(bx+16+hairSway*0.6,bob-4,3,20);
-  
-  // Shimmering highlights (Front locks)
-  ctx.fillStyle='#c59b6d'; // glowing golden-honey highlights
-  ctx.fillRect(bx+2+hairSway*0.6,bob+2,1,12);
-  ctx.fillRect(bx+17+hairSway*0.6,bob+2,1,12);
-  ctx.fillStyle='#7e4f35';
-  ctx.fillRect(bx+4,bob-8,4,1);
-  ctx.fillRect(bx+12,bob-8,3,1);
-
-  // Gold Star Hairclips!
-  ctx.fillStyle='#ffd700';
-  ctx.fillRect(bx+13,bob-6,2,2);
-  ctx.fillRect(bx+5,bob-6,1,1);
-
-  // 7. EXQUISITE BEAUTIFUL EYES (Large, Shaded Hazel-Gold Gradient)
-  // Sharp eyeliner and eyelashes
-  ctx.fillStyle='#1c0d06'; // Eyelashes & Brows
-  ctx.fillRect(bx+5,bob-4,4,1);
-  ctx.fillRect(bx+11,bob-4,4,1);
-  ctx.fillRect(bx+4,bob-3,1,1); // wing eyeliner left
-  ctx.fillRect(bx+15,bob-3,1,1); // wing eyeliner right
-
-  // Stunning Hazel-Honey Eyes Gradient
-  ctx.fillStyle='#4b2e1e'; // deep chocolate outer eye ring
-  ctx.fillRect(bx+5,bob-3,3,3);
-  ctx.fillRect(bx+12,bob-3,3,3);
-  ctx.fillStyle='#c88f46'; // warm honey golden inner iris
-  ctx.fillRect(bx+6,bob-2,1,2);
-  ctx.fillRect(bx+13,bob-2,1,2);
-  
-  // Captivating Double Sparkle Glint (Anime-style reflection)
-  ctx.fillStyle='#ffffff';
-  ctx.fillRect(bx+5,bob-3,1,1); // main glint left
-  ctx.fillRect(bx+6,bob-2,1,1); // sub glint left
-  ctx.fillRect(bx+12,bob-3,1,1); // main glint right
-  ctx.fillRect(bx+13,bob-2,1,1); // sub glint right
-
-  // Glowing peach blush
-  ctx.fillStyle='rgba(255, 115, 80, 0.6)'; 
-  ctx.fillRect(bx+5,bob,3,2);
-  ctx.fillRect(bx+12,bob,3,2);
-
-  // Curved Pretty Smile
-  ctx.fillStyle='#e06b53';
-  ctx.fillRect(bx+7,bob+3,6,2);
-  ctx.fillStyle='#fcd4b9'; // smile carve
-  ctx.fillRect(bx+9,bob+3,2,1);
-
-  // 8. Tool / Block rendering
-  if (!buildMode) {
-    ctx.fillStyle='#888';
-    ctx.fillRect(bx+18,7+bob,2,9);
-    ctx.fillStyle='#8B5E3C';
-    ctx.fillRect(bx+14,4+bob,6,5);
-  } else {
-    const bi=HOTBAR[selectedSlot];
-    ctx.font='12px serif'; ctx.textAlign='left';
-    ctx.fillText(BLOCKS[bi]?.icon||'',bx+17,13+bob);
-  }
-
-  ctx.restore();
-}
-
-function drawTargetHighlight() {
-  const t=getTargetBlock(); if(!t) return;
-  const [c,r]=t;
-  const x=c*TILE-camX, y=r*TILE-camY;
-  ctx.strokeStyle=buildMode?'#ff6b9d':'rgba(255,255,255,0.7)';
-  ctx.lineWidth=2;
-  ctx.strokeRect(x+1,y+1,TILE-2,TILE-2);
-  ctx.fillStyle=buildMode?'rgba(255,107,157,0.15)':'rgba(255,255,255,0.1)';
-  ctx.fillRect(x,y,TILE,TILE);
-}
-
-function drawDepthFog() {
-  const py=player.y/TILE;
-  const surfaceRow=38;
-  const depth=Math.max(0,(py-surfaceRow)/20);
-  if (depth>0) {
-    const fog=ctx.createLinearGradient(0,0,0,canvas.height);
-    fog.addColorStop(0,`rgba(0,0,0,${Math.min(depth*0.5,0.6)})`);
-    fog.addColorStop(1,`rgba(0,0,0,${Math.min(depth*0.7,0.8)})`);
-    ctx.fillStyle=fog;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-  }
-}
-
-function renderMinimap() {
-  mmCtx.fillStyle='#0a0a1a';
-  mmCtx.fillRect(0,0,100,60);
-  const scaleX=100/WORLD_W, scaleY=60/WORLD_H;
-  // Sample world
-  for (let c=0;c<WORLD_W;c+=2) for (let r=0;r<WORLD_H;r+=2) {
-    const b=getBlock(c,r);
-    if (b===B.AIR) continue;
-    const col=b===B.GRASS?'#5d9e3f':b===B.DIRT?'#8B5E3C':b===B.STONE?'#888':b===B.DEEP_STONE?'#444':b===B.BEDROCK?'#222':b===B.LOVE_BRICK?'#ff6b9d':b===B.WOOD?'#6b4226':b===B.LEAVES?'#2d7a1e':'#666';
-    mmCtx.fillStyle=col;
-    mmCtx.fillRect(c*scaleX,r*scaleY,2,2);
-  }
-  // Player dot
-  mmCtx.fillStyle='#fff';
-  mmCtx.fillRect(player.x/TILE*scaleX-2,player.y/TILE*scaleY-2,4,4);
-  // Camera rect
-  mmCtx.strokeStyle='rgba(255,107,157,0.5)';
-  mmCtx.lineWidth=1;
-  mmCtx.strokeRect(camX/TILE*scaleX,camY/TILE*scaleY,(canvas.width/TILE)*scaleX,(canvas.height/TILE)*scaleY);
-}
-
-// ── Particles ──
-let particles = [];
-
-function spawnBreakParticles(wx,wy,blockId) {
-  const col=BLOCKS[blockId]?.color?.[0]||'#888';
-  for (let i=0;i<10;i++) {
-    particles.push({
-      x:wx-camX, y:wy-camY,
-      vx:(Math.random()-0.5)*5, vy:-(Math.random()*4+1),
-      life:1, color:col, size:3+Math.random()*4,
-      type:'block'
-    });
-  }
-  // Love special
-  if (blockId===B.LOVE_BRICK||blockId===B.LOVE_ORE) spawnLoveParticles(wx-camX,wy-camY);
-}
-
-function spawnLoveParticles(sx,sy) {
-  const emojis=['💗','💕','❤️','✨','💖'];
-  for (let i=0;i<6;i++) {
-    particles.push({
-      x:sx, y:sy,
-      vx:(Math.random()-0.5)*4, vy:-(Math.random()*4+2),
-      life:1, size:12+Math.random()*8,
-      type:'emoji', emoji:emojis[Math.floor(Math.random()*emojis.length)]
-    });
-  }
-}
-
-function updateParticles() {
-  particles = particles.filter(p=>p.life>0);
-  particles.forEach(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.15; p.life-=0.025;
-  });
-}
-
-function drawParticles() {
-  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
-  particles.forEach(p=>{
-    pCtx.globalAlpha=p.life;
-    if (p.type==='block') {
-      pCtx.fillStyle=p.color;
-      pCtx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);
-    } else {
-      pCtx.font=`${p.size}px serif`;
-      pCtx.textAlign='center';
-      pCtx.fillText(p.emoji,p.x,p.y);
-    }
-  });
-  pCtx.globalAlpha=1;
-}
-
-function nextLevel() {
-  currentLevel = (currentLevel + 1) % LEVELS.length;
-  generateWorld();
-  const btn = document.getElementById('levelBtn');
-  if (btn) {
-    btn.textContent = LEVELS[currentLevel].name;
-    btn.style.background = LEVELS[currentLevel].themeColor;
-  }
-  // Flush particles globally
-  spawnLoveParticles(canvas.width/2, canvas.height/2);
-}
-
-// ── Secrets / Discoveries ──
-function revealSecret(type) {
-  if (type === 'portal') {
-    nextLevel();
-    return;
-  }
-  totalFinds++;
-  document.getElementById('findCount').textContent=totalFinds;
-  let icon,label,msg,photo='';
-
-  if (type==='love') {
-    icon='💗'; label='LOVE NOTE FOUND!';
-    msg=getQuote();
-  } else if (type==='diamond') {
-    icon='💎'; label='RARE TREASURE UNEARTHED!';
-    msg='✨ '+getQuote();
-  } else if (type==='gold') {
-    icon='⭐'; label='GOLDEN MEMORY!';
-    msg='🌟 '+getQuote();
-  } else if (type==='photo') {
-    icon='📸'; label='OUR PRECIOUS MEMORY!';
-    msg=getQuote();
-    if (PHOTOS.length) photo=PHOTOS[Math.floor(Math.random()*PHOTOS.length)];
-  } else if (type==='chest') {
-    icon='📦'; label='MEMORY CHEST OPENED!';
-    msg='💌 '+getQuote()+'\n\n— with all my love ❤️';
-  }
-  showPopup(icon,label,msg,photo);
-}
-
-function getQuote() {
-  const avail=LOVE_QUOTES.map((_,i)=>i).filter(i=>!usedQuoteIdx.includes(i));
-  if (!avail.length) usedQuoteIdx=[];
-  const idx=avail.length?avail[Math.floor(Math.random()*avail.length)]:Math.floor(Math.random()*LOVE_QUOTES.length);
-  usedQuoteIdx.push(idx);
-  return LOVE_QUOTES[idx];
-}
-
-function showPopup(icon,type,msg,photo) {
-  document.getElementById('popIcon').textContent=icon;
-  document.getElementById('popType').textContent=type;
-  document.getElementById('popMsg').textContent=msg;
-  const img=document.getElementById('popPhoto');
-  if (photo) { img.src=photo; img.style.display='block'; } else img.style.display='none';
-  document.getElementById('popup').classList.add('open');
-}
-function closePopup() { document.getElementById('popup').classList.remove('open'); }
-
-// ── UI Updates ──
-function updateHotbar() {
-  const row=document.getElementById('hotbarRow');
-  row.innerHTML='';
-  HOTBAR.forEach((id,i)=>{
-    const def=BLOCKS[id];
-    const slot=document.createElement('div');
-    slot.className='hslot'+(i===selectedSlot?' active':'');
-    slot.innerHTML=`<span class="slotNum">${i+1}</span><span class="slotIcon">${def.icon}</span><span class="slotName">${def.name.slice(0,6)}</span>`;
-    slot.onclick=()=>{selectedSlot=i;updateHotbar();};
-    row.appendChild(slot);
-  });
-}
-
-function updateHealth() {
-  const row=document.getElementById('healthRow');
-  row.innerHTML='';
-  for (let i=0;i<player.maxHp;i++) {
-    const h=document.createElement('span');
-    h.className='hrt';
-    h.textContent=i<player.hp?'❤️':'🖤';
-    row.appendChild(h);
-  }
-}
-
-function updateModeDisplay() {
-  document.getElementById('modeDisplay').textContent=buildMode?'🏗 BUILD MODE':'⛏ DIG MODE';
-}
-
-function buildInventoryUI() {
-  const grid=document.getElementById('invGrid');
-  grid.innerHTML='';
-  const allBlocks=[B.GRASS,B.DIRT,B.STONE,B.DEEP_STONE,B.WOOD,B.PLANK,B.LEAVES,B.SAND,B.LOVE_BRICK,B.HEART_GLASS,B.ROSE,B.CHEST,B.CLOUD_BLOCK,B.GLASS,B.FENCE,B.PORTAL,B.PHOTO_BLOCK,B.DIAMOND_ORE,B.LOVE_ORE,B.GOLD_ORE];
-  allBlocks.forEach(id=>{
-    const def=BLOCKS[id]; if(!def) return;
-    const slot=document.createElement('div');
-    slot.className='invSlot';
-    slot.innerHTML=`${def.icon}<span>${def.name}</span>`;
-    slot.title=def.name;
-    slot.onclick=()=>{
-      HOTBAR[selectedSlot]=id;
-      updateHotbar();
-      toggleInventory();
+  <script>
+    // ════════════════════════════════════════════════════
+    //  ❤️  CUSTOMIZE YOUR LOVE CONTENT HERE  ❤️
+    // ════════════════════════════════════════════════════
+    const HER_NAME = "Diya 💕";
+
+    const LOVE_QUOTES = [
+      "My favorite place in the entire world is next to you. 🌎",
+      "I look at you and see the rest of my life in your eyes. ✨",
+      "You are my blue sky, my sunny day, and my favorite daydream. ☁️",
+      "You make my heart skip a beat every single time you smile. 💓",
+      "To the moon and back, in every single timeline, it will always be you. 🌙",
+      "You are the 'once in a lifetime' kind of magic. 🪄✨",
+      "I choose you. And I'll choose you over and over. Without a doubt. 🌹",
+      "You are my today, my tomorrow, and my absolute forever. 🌅",
+      "Loving you is like breathing... how can I stop? 🌬️💗",
+      "Every love story is beautiful, but ours is my favorite. 📖💕",
+      "You are my home and my adventure, all in one person. 🏠🎒",
+      "If I had a flower for every time I thought of you, I'd walk in a garden forever. 🌸",
+      "I fall for your laugh, your smile, and your beautiful soul every single day. 😊💖",
+      "You make me feel like the luckiest pixel in the digital universe. 💻💕",
+      "We fit together like pieces of a puzzle made in heaven. 🧩✨"
+    ];
+
+    const PHOTOS = [
+      "bd/WhatsApp Image 2026-02-08 at 6.31.31 PM.jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (1).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (2).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (3).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (4).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (5).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (6).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (7).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (8).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.31.32 PM (9).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.33.58 PM.jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.33.58 PM (1).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.33.58 PM (2).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM.jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (1).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (2).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (3).jpeg",
+      "bd/WhatsApp Image 2026-02-08 at 6.49.28 PM (4).jpeg"
+    ];
+
+    // ════════════════════════════════════════════════════
+    //  GAME ENGINE
+    // ════════════════════════════════════════════════════
+    const TILE = 32;
+    const WORLD_W = 300;   // tiles wide
+    const WORLD_H = 80;    // tiles tall
+    const VIEW_W = Math.ceil(window.innerWidth / TILE) + 2;
+    const VIEW_H = Math.ceil(window.innerHeight / TILE) + 2;
+
+    // Levels configuration
+    let currentLevel = 0;
+    const LEVELS = [
+      { name: "Meadow 🌱", themeColor: "#5d9e3f" },
+      { name: "Sky Cloud ☁️", themeColor: "#ffb3cc" },
+      { name: "Deep Caves 🔮", themeColor: "#ce93d8" },
+      { name: "Sunset Beach 🏖️", themeColor: "#f0e0b8" }
+    ];
+
+    // Block IDs
+    const B = {
+      AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, DEEP_STONE: 4, BEDROCK: 5,
+      WOOD: 6, LEAVES: 7, LOVE_BRICK: 8, HEART_GLASS: 9, ROSE: 10,
+      CHEST: 11, DIAMOND_ORE: 12, LOVE_ORE: 13, GOLD_ORE: 14, PHOTO_BLOCK: 15,
+      WATER: 16, SAND: 17, CLOUD_BLOCK: 18, PLANK: 19, GLASS: 20, FENCE: 21,
+      PORTAL: 22
     };
-    grid.appendChild(slot);
-  });
-}
 
-function toggleInventory() {
-  const inv=document.getElementById('inventory');
-  if (inv.classList.contains('open')) inv.classList.remove('open');
-  else { buildInventoryUI(); inv.classList.add('open'); }
-}
+    // Block definitions
+    const BLOCKS = {
+      [B.AIR]: { name: 'Air', color: null, solid: false, icon: '', placeable: false },
+      [B.GRASS]: { name: 'Grass', color: ['#5d9e3f', '#4a7e31', '#6ab548'], solid: true, icon: '🟩', placeable: true },
+      [B.DIRT]: { name: 'Dirt', color: ['#8B5E3C', '#6e4a2e', '#9e6b45'], solid: true, icon: '🟫', placeable: true },
+      [B.STONE]: { name: 'Stone', color: ['#888', '#666', '#999'], solid: true, icon: '⬜', placeable: true },
+      [B.DEEP_STONE]: { name: 'Deep Stone', color: ['#444', '#333', '#555'], solid: true, icon: '🔲', placeable: true },
+      [B.BEDROCK]: { name: 'Bedrock', color: ['#222', '#111', '#2a2a2a'], solid: true, icon: '⬛', placeable: false },
+      [B.WOOD]: { name: 'Wood Log', color: ['#6b4226', '#4a2d15', '#8B5E3C'], solid: true, icon: '🪵', placeable: true },
+      [B.LEAVES]: { name: 'Leaves', color: ['#2d7a1e', '#1e5a12', '#3d9c28'], solid: true, icon: '🌿', placeable: true },
+      [B.LOVE_BRICK]: { name: 'Love Brick', color: ['#ff6b9d', '#d63d70', '#ff9bbf'], solid: true, icon: '💗', placeable: true },
+      [B.HEART_GLASS]: { name: 'Heart Glass', color: ['#ff9bbf88', '#e0608888', '#ffb3cc88'], solid: true, icon: '🔮', placeable: true, transparent: true },
+      [B.ROSE]: { name: 'Rose', color: ['#e63950', '#b01030', '#ff6070'], solid: false, icon: '🌹', placeable: true },
+      [B.CHEST]: { name: 'Memory Chest', color: ['#8B5E3C', '#5a3a1a', '#c49a6c'], solid: true, icon: '📦', placeable: true, special: 'chest' },
+      [B.DIAMOND_ORE]: { name: 'Diamond Ore', color: ['#888', '#666', '#4fc3f7'], solid: true, icon: '💎', placeable: true, special: 'diamond' },
+      [B.LOVE_ORE]: { name: 'Love Ore', color: ['#888', '#ff6b9d', '#999'], solid: true, icon: '💗', placeable: true, special: 'love' },
+      [B.GOLD_ORE]: { name: 'Gold Ore', color: ['#888', '#ffd700', '#999'], solid: true, icon: '⭐', placeable: true, special: 'gold' },
+      [B.PHOTO_BLOCK]: { name: 'Photo Gem', color: ['#9c27b0', '#6a0080', '#ce93d8'], solid: true, icon: '📸', placeable: true, special: 'photo' },
+      [B.WATER]: { name: 'Water', color: ['#1e90ff88', '#0066cc88', '#64b5f688'], solid: false, icon: '💧', placeable: true, transparent: true },
+      [B.SAND]: { name: 'Sand', color: ['#e8d5a3', '#c9b98a', '#f0e0b8'], solid: true, icon: '🟡', placeable: true },
+      [B.CLOUD_BLOCK]: { name: 'Cloud', color: ['#ffffff', '#e8e8e8', '#f8f8f8'], solid: true, icon: '☁️', placeable: true },
+      [B.PLANK]: { name: 'Wood Plank', color: ['#a0712a', '#7a5218', '#c49a50'], solid: true, icon: '🟧', placeable: true },
+      [B.GLASS]: { name: 'Glass', color: ['#aaddff44', '#88bbdd44', '#cceeff44'], solid: true, icon: '🔲', placeable: true, transparent: true },
+      [B.FENCE]: { name: 'Fence', color: ['#8B5E3C', '#6e4a2e', '#a07040'], solid: false, icon: '🟫', placeable: true, fence: true },
+      [B.PORTAL]: { name: 'Love Portal', color: ['#e040fb', '#8e24aa', '#f3e5f5'], solid: false, icon: '🔮', placeable: true, transparent: true, special: 'portal' }
+    };
 
-// ── Quote ticker ──
-function updateQuoteTicker() {
-  const el=document.getElementById('quoteTicker');
-  if (quotePos>=quoteText.length+30) {
-    quotePos=0;
-    quoteText=LOVE_QUOTES[Math.floor(Math.random()*LOVE_QUOTES.length)];
-  }
-  const disp=quoteText.substring(Math.max(0,quotePos-30),quotePos);
-  el.textContent='💕 '+disp+' 💕';
-  quotePos++;
-}
+    // Hotbar slots
+    const HOTBAR = [
+      B.LOVE_BRICK, B.GRASS, B.DIRT, B.STONE, B.WOOD, B.PLANK, B.HEART_GLASS, B.CHEST
+    ];
 
-// ── Day/night cycle ──
-function updateDayCycle() {
-  const t=(gameTime%1200)/1200;
-  const dayEl=document.getElementById('dayCounter');
-  if (t<0.5) dayEl.textContent=`Day ${dayCount} ☀️`;
-  else dayEl.textContent=`Day ${dayCount} 🌙`;
-  if (gameTime%1200===0&&gameTime>0) dayCount++;
-}
+    // ── Canvas setup ──
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const pCanvas = document.getElementById('particleCanvas');
+    const pCtx = pCanvas.getContext('2d');
+    const mmCanvas = document.getElementById('minimap');
+    const mmCtx = mmCanvas.getContext('2d');
 
-// ── Title screen stars ──
-function makeTitleStars() {
-  const ts=document.getElementById('titleScreen');
-  for (let i=0;i<25;i++) {
-    const s=document.createElement('div');
-    s.className='titleStar';
-    s.textContent=['💕','✨','💗','⭐','🌟'][Math.floor(Math.random()*5)];
-    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;font-size:${8+Math.random()*14}px;animation-delay:${Math.random()*2}s;animation-duration:${1.5+Math.random()*2}s`;
-    ts.appendChild(s);
-  }
-}
+    function resizeCanvases() {
+      canvas.width = pCanvas.width = window.innerWidth;
+      canvas.height = pCanvas.height = window.innerHeight;
+    }
+    resizeCanvases();
+    window.addEventListener('resize', resizeCanvases);
 
-// ── Color lerp ──
-function lerpColor(a,b,t) {
-  const ah=a.replace('#',''), bh=b.replace('#','');
-  const ar=parseInt(ah.slice(0,2),16), ag=parseInt(ah.slice(2,4),16), ab2=parseInt(ah.slice(4,6),16);
-  const br=parseInt(bh.slice(0,2),16), bg=parseInt(bh.slice(2,4),16), bb2=parseInt(bh.slice(4,6),16);
-  const rr=Math.round(ar+(br-ar)*t), rg=Math.round(ag+(bg-ag)*t), rb=Math.round(ab2+(bb2-ab2)*t);
-  return `rgb(${rr},${rg},${rb})`;
-}
+    // ── World ──
+    let world = new Uint8Array(WORLD_W * WORLD_H);
+    let secrets = {};
 
-// ── Main game loop ──
-let lastTime=0;
-function gameLoop(ts) {
-  if (!gameRunning) { requestAnimationFrame(gameLoop); return; }
-  const dt=Math.min((ts-lastTime)/16,3); lastTime=ts;
+    function wi(c, r) { return r * WORLD_W + c; }
+    function getBlock(c, r) { if (c < 0 || c >= WORLD_W || r < 0 || r >= WORLD_H) return B.BEDROCK; return world[wi(c, r)]; }
+    function setBlock(c, r, id) { if (c < 0 || c >= WORLD_W || r < 0 || r >= WORLD_H) return; world[wi(c, r)] = id; }
 
-  gameTime++;
+    function generateWorld() {
+      // Clear world
+      world.fill(B.AIR);
+      secrets = {};
 
-  // Input
-  if (leftClick && !buildMode) handleDig();
-  if ((rightClick || (leftClick&&buildMode))) handlePlace();
+      if (currentLevel === 0) {
+        // 🌸 Level 1: Spring Meadow
+        const surface = [];
+        let h = 40;
+        for (let c = 0; c < WORLD_W; c++) {
+          h += (Math.random() - 0.5) * 2.5;
+          h = Math.max(30, Math.min(52, h));
+          surface[c] = Math.round(h);
+        }
+        for (let c = 0; c < WORLD_W; c++) {
+          const s = surface[c];
+          for (let r = 0; r < WORLD_H; r++) {
+            if (r < s - 1) setBlock(c, r, B.AIR);
+            else if (r === s - 1) setBlock(c, r, B.GRASS);
+            else if (r < s + 4) setBlock(c, r, B.DIRT);
+            else if (r < s + 14) setBlock(c, r, B.STONE);
+            else if (r < WORLD_H - 1) setBlock(c, r, B.DEEP_STONE);
+            else setBlock(c, r, B.BEDROCK);
+          }
+        }
+        // Trees
+        for (let c = 5; c < WORLD_W - 5; c += 7 + Math.floor(Math.random() * 8)) {
+          const s = surface[c];
+          const th = 4 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < th; i++) setBlock(c, s - 2 - i, B.WOOD);
+          for (let dr = -2; dr <= 2; dr++) for (let dc = -2; dc <= 2; dc++) {
+            if (Math.abs(dr) + Math.abs(dc) <= 3 && getBlock(c + dc, s - 2 - th + dr) === B.AIR)
+              setBlock(c + dc, s - 2 - th + dr, B.LEAVES);
+          }
+        }
+        // Roses
+        for (let c = 2; c < WORLD_W - 2; c++) {
+          const s = surface[c];
+          if (Math.random() < 0.06 && getBlock(c, s - 2) === B.AIR) setBlock(c, s - 2, B.ROSE);
+        }
+        // Sand
+        for (let i = 0; i < 8; i++) {
+          const cc = 10 + Math.floor(Math.random() * (WORLD_W - 20));
+          const s = surface[cc];
+          for (let dc = -3; dc <= 3; dc++) if (getBlock(cc + dc, s - 1) === B.GRASS || getBlock(cc + dc, s - 1) === B.DIRT) setBlock(cc + dc, s - 1, B.SAND);
+        }
+        // Pre-built love cabin near spawn
+        buildLoveCabin(Math.floor(WORLD_W / 2), surface[Math.floor(WORLD_W / 2)] - 2);
 
-  updatePlayer(dt);
-  updateParticles();
+        // Place Photo Gems on the surface near the Cabin spawn for instant visibility!
+        const cabinX = Math.floor(WORLD_W / 2);
+        setBlock(cabinX + 6, surface[cabinX + 6] - 2, B.PHOTO_BLOCK);
+        secrets[`${cabinX + 6},${surface[cabinX + 6] - 2}`] = { type: 'photo', used: false };
+        setBlock(cabinX - 6, surface[cabinX - 6] - 2, B.PHOTO_BLOCK);
+        secrets[`${cabinX - 6},${surface[cabinX - 6] - 2}`] = { type: 'photo', used: false };
 
-  // Draw
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawSky();
+        // Portal to Next Level
+        const spawnC = Math.floor(WORLD_W / 2) + 12;
+        const portalY = surface[spawnC] - 2;
+        setBlock(spawnC, portalY, B.PORTAL);
+        secrets[`${spawnC},${portalY}`] = { type: 'portal', used: false };
 
-  // World blocks
-  const c0=Math.max(0,Math.floor(camX/TILE)-1);
-  const c1=Math.min(WORLD_W-1,Math.ceil((camX+canvas.width)/TILE)+1);
-  const r0=Math.max(0,Math.floor(camY/TILE)-1);
-  const r1=Math.min(WORLD_H-1,Math.ceil((camY+canvas.height)/TILE)+1);
-  for (let r=r0;r<=r1;r++) for (let c=c0;c<=c1;c++) drawBlock(c,r);
+        // Underground ores & secrets
+        for (let i = 0; i < 40; i++) placeTreasure(B.LOVE_ORE, 'love', 3, 8);
+        for (let i = 0; i < 20; i++) placeTreasure(B.DIAMOND_ORE, 'diamond', 5, 12);
+        for (let i = 0; i < 30; i++) placeTreasure(B.GOLD_ORE, 'gold', 4, 10);
+        for (let i = 0; i < 15; i++) placeTreasure(B.PHOTO_BLOCK, 'photo', 6, 14);
+        for (let i = 0; i < 10; i++) placeTreasure(B.CHEST, 'chest', 3, 10);
 
-  drawDepthFog();
-  drawTargetHighlight();
-  drawPlayer();
+      } else if (currentLevel === 1) {
+        // ☁️ Level 2: Cloud Kingdom (Sky Islands)
+        // Create sky islands
+        for (let i = 0; i < 15; i++) {
+          const cx = 15 + Math.floor(Math.random() * (WORLD_W - 30));
+          const cy = 25 + Math.floor(Math.random() * 20);
+          const radX = 8 + Math.floor(Math.random() * 12);
+          const radY = 3 + Math.floor(Math.random() * 4);
+          for (let c = cx - radX; c <= cx + radX; c++) {
+            for (let r = cy - radY; r <= cy + radY; r++) {
+              if (c < 0 || c >= WORLD_W || r < 0 || r >= WORLD_H) continue;
+              const dist = (c - cx) * (c - cx) / (radX * radX) + (r - cy) * (r - cy) / (radY * radY);
+              if (dist <= 1.0) {
+                setBlock(c, r, r === cy - radY ? B.CLOUD_BLOCK : B.HEART_GLASS);
+              }
+            }
+          }
+          // Place treasures/portals
+          if (Math.random() < 0.6) {
+            setBlock(cx, cy - radY - 1, B.CHEST);
+            secrets[`${cx},${cy - radY - 1}`] = { type: 'chest', used: false };
+          }
+          if (Math.random() < 0.5) {
+            setBlock(cx - 3, cy - radY - 1, B.PHOTO_BLOCK);
+            secrets[`${cx - 3},${cy - radY - 1}`] = { type: 'photo', used: false };
+          }
+          if (Math.random() < 0.4) {
+            setBlock(cx + 3, cy - radY - 1, B.PORTAL);
+            secrets[`${cx + 3},${cy - radY - 1}`] = { type: 'portal', used: false };
+          }
+        }
+        // Solid cloud foundation at spawn
+        const spawnC = Math.floor(WORLD_W / 2);
+        for (let c = spawnC - 15; c <= spawnC + 15; c++) {
+          for (let r = 40; r <= 44; r++) {
+            setBlock(c, r, r === 40 ? B.CLOUD_BLOCK : B.GLASS);
+          }
+        }
+        setBlock(spawnC + 5, 39, B.PORTAL);
+        secrets[`${spawnC + 5},39`] = { type: 'portal', used: false };
 
-  drawParticles();
-  renderMinimap();
+        // Bedrock at the very bottom
+        for (let c = 0; c < WORLD_W; c++) setBlock(c, WORLD_H - 1, B.BEDROCK);
 
-  // Slower updates
-  if (gameTime%8===0) updateQuoteTicker();
-  if (gameTime%60===0) updateDayCycle();
-  if (gameTime%120===0) updateHealth();
+      } else if (currentLevel === 2) {
+        // 🔮 Level 3: Deep Crystal Caves
+        for (let c = 0; c < WORLD_W; c++) {
+          for (let r = 0; r < WORLD_H; r++) {
+            if (r === 0) setBlock(c, r, B.AIR);
+            else if (r < 15) setBlock(c, r, B.STONE);
+            else if (r < WORLD_H - 1) setBlock(c, r, B.DEEP_STONE);
+            else setBlock(c, r, B.BEDROCK);
+          }
+        }
+        // Carve tunnels
+        for (let i = 0; i < 16; i++) {
+          let cx = Math.floor(Math.random() * WORLD_W);
+          let cy = 10 + Math.floor(Math.random() * (WORLD_H - 20));
+          for (let step = 0; step < 120; step++) {
+            const r = 4 + Math.floor(Math.random() * 3);
+            for (let dc = -r; dc <= r; dc++) {
+              for (let dr = -r; dr <= r; dr++) {
+                if (dc * dc + dr * dr <= r * r) setBlock(cx + dc, cy + dr, B.AIR);
+              }
+            }
+            cx += Math.round((Math.random() - 0.5) * 4);
+            cy += Math.round((Math.random() - 0.5) * 3);
+            if (cx < 5) cx = 5; if (cx >= WORLD_W - 5) cx = WORLD_W - 5;
+            if (cy < 5) cy = 5; if (cy >= WORLD_H - 5) cy = WORLD_H - 5;
+          }
+        }
+        // Solid starting room around spawn
+        const spawnC = Math.floor(WORLD_W / 2);
+        for (let c = spawnC - 8; c <= spawnC + 8; c++) {
+          for (let r = 35; r <= 42; r++) setBlock(c, r, B.AIR);
+        }
+        for (let c = spawnC - 8; c <= spawnC + 8; c++) setBlock(c, 43, B.STONE);
 
-  requestAnimationFrame(gameLoop);
-}
+        setBlock(spawnC - 5, 42, B.CHEST);
+        secrets[`${spawnC - 5},42`] = { type: 'chest', used: false };
 
-// ── Start ──
-function startGame() {
-  document.getElementById('titleScreen').style.display='none';
-  generateWorld();
-  updateHotbar();
-  updateHealth();
-  updateModeDisplay();
-  const btn = document.getElementById('levelBtn');
-  if (btn) {
-    btn.textContent = LEVELS[currentLevel].name;
-    btn.style.background = LEVELS[currentLevel].themeColor;
-  }
-  gameRunning=true;
-  requestAnimationFrame(gameLoop);
-}
+        setBlock(spawnC + 5, 42, B.PORTAL);
+        secrets[`${spawnC + 5},42`] = { type: 'portal', used: false };
 
-makeTitleStars();
-requestAnimationFrame(gameLoop);
-</script>
+        // Plant lots of glowing gems
+        for (let i = 0; i < 40; i++) placeTreasure(B.LOVE_ORE, 'love', 5, 20);
+        for (let i = 0; i < 30; i++) placeTreasure(B.DIAMOND_ORE, 'diamond', 5, 20);
+        for (let i = 0; i < 20; i++) placeTreasure(B.PHOTO_BLOCK, 'photo', 5, 20);
+
+      } else if (currentLevel === 3) {
+        // 🏖️ Level 4: Sunset Beach
+        const surfaceY = 44;
+        for (let c = 0; c < WORLD_W; c++) {
+          const isWater = c > 180;
+          for (let r = 0; r < WORLD_H; r++) {
+            if (r < surfaceY) {
+              if (isWater && r >= surfaceY - 8) setBlock(c, r, B.WATER);
+              else setBlock(c, r, B.AIR);
+            } else if (r === surfaceY) {
+              setBlock(c, r, B.SAND);
+            } else if (r < surfaceY + 6) {
+              setBlock(c, r, B.SAND);
+            } else if (r < surfaceY + 16) {
+              setBlock(c, r, B.STONE);
+            } else if (r < WORLD_H - 1) {
+              setBlock(c, r, B.DEEP_STONE);
+            } else {
+              setBlock(c, r, B.BEDROCK);
+            }
+          }
+        }
+
+        // palm trees
+        for (let c = 10; c < 170; c += 15 + Math.floor(Math.random() * 15)) {
+          const th = 6 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < th; i++) {
+            const lean = Math.floor(i / 3);
+            setBlock(c + lean, surfaceY - 1 - i, B.WOOD);
+            if (i === th - 1) {
+              const lc = c + lean;
+              const ly = surfaceY - 1 - i;
+              setBlock(lc, ly - 1, B.LEAVES);
+              setBlock(lc - 1, ly, B.LEAVES);
+              setBlock(lc + 1, ly, B.LEAVES);
+              setBlock(lc - 2, ly + 1, B.LEAVES);
+              setBlock(lc + 2, ly + 1, B.LEAVES);
+            }
+          }
+        }
+
+        // Portal back to Meadow
+        const spawnC = Math.floor(WORLD_W / 2);
+        setBlock(spawnC - 10, surfaceY - 1, B.PORTAL);
+        secrets[`${spawnC - 10},${surfaceY - 1}`] = { type: 'portal', used: false };
+
+        // Ores and secrets
+        for (let i = 0; i < 30; i++) placeTreasure(B.LOVE_ORE, 'love', 2, 8);
+        for (let i = 0; i < 20; i++) placeTreasure(B.DIAMOND_ORE, 'diamond', 4, 10);
+        for (let i = 0; i < 15; i++) placeTreasure(B.PHOTO_BLOCK, 'photo', 4, 10);
+      }
+
+      // Put player in a safe spot
+      player.vx = 0; player.vy = 0;
+      player.x = WORLD_W / 2 * TILE;
+      let foundY = 30;
+      for (let r = 0; r < WORLD_H; r++) {
+        const b = getBlock(Math.floor(WORLD_W / 2), r);
+        if (b !== B.AIR && b !== B.WATER && b !== B.LEAVES) {
+          foundY = r;
+          break;
+        }
+      }
+      player.y = (foundY - 2) * TILE;
+    }
+
+    function placeTreasure(blockId, secretType, minDepth, maxDepth) {
+      for (let tries = 0; tries < 50; tries++) {
+        const c = 2 + Math.floor(Math.random() * (WORLD_W - 4));
+        const r = Math.floor(Math.random() * (WORLD_H - minDepth - 4)) + minDepth + 20;
+        if (r >= WORLD_H - 1) continue;
+        const cur = getBlock(c, r);
+        if (cur === B.STONE || cur === B.DEEP_STONE || cur === B.DIRT || cur === B.SAND || cur === B.CLOUD_BLOCK) {
+          setBlock(c, r, blockId);
+          secrets[`${c},${r}`] = { type: secretType, used: false };
+          break;
+        }
+      }
+    }
+
+    function buildLoveCabin(cx, groundY) {
+      // Floor
+      for (let x = cx - 4; x <= cx + 4; x++) setBlock(x, groundY + 1, B.PLANK);
+      // Walls
+      for (let y = groundY; y >= groundY - 4; y--) {
+        setBlock(cx - 4, y, B.LOVE_BRICK);
+        setBlock(cx + 4, y, B.LOVE_BRICK);
+      }
+      // Back wall
+      for (let x = cx - 4; x <= cx + 4; x++) setBlock(x, groundY - 4, B.LOVE_BRICK);
+      // Roof (heart shape attempt)
+      for (let x = cx - 5; x <= cx + 5; x++) setBlock(x, groundY - 5, B.LOVE_BRICK);
+      // Windows
+      setBlock(cx - 2, groundY - 2, B.HEART_GLASS);
+      setBlock(cx + 2, groundY - 2, B.HEART_GLASS);
+      // Door opening
+      setBlock(cx, groundY, B.AIR);
+      setBlock(cx, groundY - 1, B.AIR);
+      // Interior chest
+      setBlock(cx - 2, groundY, B.CHEST);
+      secrets[`${cx - 2},${groundY}`] = { type: 'chest', used: false };
+      // Interior roses
+      setBlock(cx + 2, groundY, B.ROSE);
+      // Sign above door (love brick)
+      setBlock(cx, groundY - 5, B.LOVE_BRICK);
+      // Chimney
+      for (let y = groundY - 6; y >= groundY - 8; y--) setBlock(cx + 3, y, B.STONE);
+    }
+
+    // ── Player ──
+    const player = {
+      x: WORLD_W / 2 * TILE,
+      y: 38 * TILE,
+      vx: 0, vy: 0,
+      w: 20, h: 28,
+      onGround: false,
+      facing: 1,
+      animT: 0,
+      sprinting: false,
+      hp: 10,
+      maxHp: 10,
+    };
+
+    const GRAVITY = 0.45;
+    const JUMP_FORCE = -9;
+    const WALK_SPEED = 3.5;
+    const SPRINT_MULT = 1.6;
+
+    let camX = 0, camY = 0;
+    let selectedSlot = 0;
+    let buildMode = false;
+    let gameTime = 0; // ticks
+    let dayCount = 1;
+    let totalFinds = 0;
+    let blocksPlaced = 0;
+    let usedQuoteIdx = [];
+    let quoteText = LOVE_QUOTES[0];
+    let quotePos = 0;
+    let gameRunning = false;
+
+    // Input
+    const keys = {};
+    let mouseX = 0, mouseY = 0;
+    let leftClick = false, rightClick = false;
+    let lastDig = 0, lastPlace = 0;
+
+    document.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      if (e.code === 'KeyE' && gameRunning) toggleInventory();
+      if (e.code === 'KeyR' && gameRunning) { buildMode = !buildMode; updateModeDisplay(); }
+      if (e.code === 'Escape') { closePopup(); document.getElementById('inventory').classList.remove('open'); }
+      for (let i = 0; i < 8; i++) if (e.code === `Digit${i + 1}`) { selectedSlot = i; updateHotbar(); }
+      if (e.code === 'Space') e.preventDefault();
+    });
+    document.addEventListener('keyup', e => keys[e.code] = false);
+
+    canvas.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+    canvas.addEventListener('mousedown', e => {
+      if (e.button === 0) leftClick = true;
+      if (e.button === 2) rightClick = true;
+      e.preventDefault();
+    });
+    canvas.addEventListener('mouseup', e => {
+      if (e.button === 0) leftClick = false;
+      if (e.button === 2) rightClick = false;
+    });
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
+    canvas.addEventListener('wheel', e => {
+      selectedSlot = (selectedSlot + (e.deltaY > 0 ? 1 : -1) + 8) % 8;
+      updateHotbar();
+    });
+
+    // ── Physics ──
+    function collides(x, y) {
+      const c1 = Math.floor(x / TILE), r1 = Math.floor(y / TILE);
+      const c2 = Math.floor((x + player.w - 1) / TILE), r2 = Math.floor((y + player.h - 1) / TILE);
+      for (let c = c1; c <= c2; c++) for (let r = r1; r <= r2; r++) {
+        const b = getBlock(c, r);
+        if (BLOCKS[b] && BLOCKS[b].solid && !BLOCKS[b].transparent) return true;
+      }
+      return false;
+    }
+
+    function updatePlayer(dt) {
+      const sp = WALK_SPEED * (player.sprinting ? SPRINT_MULT : 1);
+      player.vx = 0;
+
+      if (keys['ArrowLeft'] || keys['KeyA']) { player.vx = -sp; player.facing = -1; }
+      if (keys['ArrowRight'] || keys['KeyD']) { player.vx = sp; player.facing = 1; }
+      if ((keys['ArrowUp'] || keys['KeyW'] || keys['Space']) && player.onGround) {
+        player.vy = JUMP_FORCE;
+        player.onGround = false;
+      }
+      player.sprinting = keys['ShiftLeft'] || keys['ShiftRight'];
+
+      player.vy += GRAVITY;
+      player.vy = Math.min(player.vy, 18);
+
+      // X movement
+      player.x += player.vx;
+      if (collides(player.x, player.y)) player.x -= player.vx;
+      player.x = Math.max(0, Math.min(player.x, (WORLD_W - 1) * TILE));
+
+      // Y movement
+      player.y += player.vy;
+      if (player.vy > 0 && collides(player.x, player.y)) {
+        while (collides(player.x, player.y)) player.y--;
+        player.vy = 0; player.onGround = true;
+      } else if (player.vy < 0 && collides(player.x, player.y)) {
+        while (collides(player.x, player.y)) player.y++;
+        player.vy = 0;
+      } else {
+        player.onGround = false;
+      }
+      // Check ground
+      if (!player.onGround) {
+        const testY = player.y + player.h + 1;
+        const c1 = Math.floor(player.x / TILE), c2 = Math.floor((player.x + player.w - 1) / TILE);
+        for (let c = c1; c <= c2; c++) {
+          const b = getBlock(c, Math.floor(testY / TILE));
+          if (BLOCKS[b] && BLOCKS[b].solid && !BLOCKS[b].transparent) { player.onGround = true; break; }
+        }
+      }
+
+      // Void Fall Protection: Teleport player back safely
+      if (player.y > (WORLD_H - 1) * TILE) {
+        player.vx = 0; player.vy = 0;
+        player.x = WORLD_W / 2 * TILE;
+        let foundY = 30;
+        for (let r = 0; r < WORLD_H; r++) {
+          const b = getBlock(Math.floor(WORLD_W / 2), r);
+          if (b !== B.AIR && b !== B.WATER && b !== B.LEAVES && b !== B.BEDROCK) {
+            foundY = r;
+            break;
+          }
+        }
+        player.y = (foundY - 2) * TILE;
+        spawnLoveParticles(canvas.width / 2, canvas.height / 2);
+      }
+
+      // Portal Touching Auto-Advance
+      const pc = Math.floor((player.x + player.w / 2) / TILE);
+      const pr = Math.floor((player.y + player.h / 2) / TILE);
+      if (getBlock(pc, pr) === B.PORTAL || getBlock(pc, pr + 1) === B.PORTAL) {
+        nextLevel();
+      }
+
+      if (player.vx !== 0) player.animT++;
+
+      // Camera
+      camX = player.x - canvas.width / 2 + player.w / 2;
+      camY = player.y - canvas.height / 2 + player.h / 2;
+      camX = Math.max(0, Math.min(camX, WORLD_W * TILE - canvas.width));
+      camY = Math.max(0, Math.min(camY, WORLD_H * TILE - canvas.height));
+
+      document.getElementById('coordDisplay').textContent = `X:${Math.floor(player.x / TILE)} Y:${Math.floor(player.y / TILE)}`;
+    }
+
+    // ── Digging / Placing ──
+    function getTargetBlock() {
+      const wx = mouseX + camX, wy = mouseY + camY;
+      const tc = Math.floor(wx / TILE), tr = Math.floor(wy / TILE);
+      const pc = Math.floor(player.x / TILE), pr = Math.floor(player.y / TILE);
+      if (Math.abs(tc - pc) <= 5 && Math.abs(tr - pr) <= 5) return [tc, tr];
+      return null;
+    }
+
+    function handleDig() {
+      if (document.getElementById('inventory').classList.contains('open')) return;
+      const now = performance.now();
+      if (now - lastDig < 180) return;
+      const t = getTargetBlock(); if (!t) return;
+      const [c, r] = t;
+      const b = getBlock(c, r);
+      if (!b || b === B.BEDROCK) return;
+      lastDig = now;
+
+      spawnBreakParticles(c * TILE + TILE / 2, r * TILE + TILE / 2, b);
+      setBlock(c, r, B.AIR);
+
+      const key = `${c},${r}`;
+      if (secrets[key] && !secrets[key].used) {
+        secrets[key].used = true;
+        setTimeout(() => revealSecret(secrets[key].type), 400);
+      }
+    }
+
+    function handlePlace() {
+      if (document.getElementById('inventory').classList.contains('open')) return;
+      const now = performance.now();
+      if (now - lastPlace < 200) return;
+      const t = getTargetBlock(); if (!t) return;
+      const [c, r] = t;
+      if (getBlock(c, r) !== B.AIR) return;
+
+      // Don't place inside player
+      const px = Math.floor(player.x / TILE), py = Math.floor(player.y / TILE);
+      if ((c === px || c === px) && (r === py || r === py + 1)) return;
+
+      lastPlace = now;
+      const blockId = HOTBAR[selectedSlot];
+      if (!BLOCKS[blockId] || !BLOCKS[blockId].placeable) return;
+      setBlock(c, r, blockId);
+
+      if (blockId === B.LOVE_BRICK || blockId === B.HEART_GLASS) spawnLoveParticles(c * TILE + TILE / 2, r * TILE + TILE / 2);
+      blocksPlaced++;
+      document.getElementById('blockCount').textContent = blocksPlaced;
+    }
+
+    // ── Rendering ──
+    function drawSky() {
+      const t = (gameTime % 1200) / 1200; // 0=dawn,0.25=noon,0.5=dusk,0.75=night
+      let c1, c2, c3;
+
+      if (currentLevel === 0) {
+        // 🌸 Level 1: Meadow
+        if (t < 0.25) {      // dawn
+          c1 = lerpColor('#1a1a3a', '#ff9966', t * 4);
+          c2 = lerpColor('#2d0a3a', '#ffcc99', t * 4);
+          c3 = 'rgba(255,200,150,0.3)';
+        } else if (t < 0.5) { // day
+          c1 = lerpColor('#ff9966', '#87CEEB', (t - 0.25) * 4);
+          c2 = lerpColor('#ffcc99', '#b0dfff', (t - 0.25) * 4);
+          c3 = 'transparent';
+        } else if (t < 0.75) { // dusk
+          c1 = lerpColor('#87CEEB', '#1a1a3a', (t - 0.5) * 4);
+          c2 = lerpColor('#b0dfff', '#2d0a3a', (t - 0.5) * 4);
+          c3 = 'rgba(255,150,80,0.3)';
+        } else {            // night
+          c1 = '#0a0a1a'; c2 = '#1a1a3a'; c3 = 'transparent';
+        }
+      } else if (currentLevel === 1) {
+        // ☁️ Level 2: Cloud Kingdom (Beautiful continuous pink-purple sky)
+        c1 = lerpColor('#aee2ff', '#ffc0e0', Math.sin(gameTime * 0.01) * 0.5 + 0.5);
+        c2 = lerpColor('#ffd0f5', '#ffffff', Math.sin(gameTime * 0.015) * 0.5 + 0.5);
+        c3 = 'rgba(255,255,255,0.4)';
+      } else if (currentLevel === 2) {
+        // 🔮 Level 3: Deep caves (dark deep purple/neon background)
+        c1 = '#0b0314';
+        c2 = '#1a092a';
+        c3 = 'rgba(230,80,255,0.05)';
+      } else if (currentLevel === 3) {
+        // 🏖️ Level 4: Sunset Beach (Continuous warm sunset colors)
+        c1 = lerpColor('#ff5e36', '#ffa834', Math.sin(gameTime * 0.005) * 0.5 + 0.5);
+        c2 = lerpColor('#ffa834', '#ff5e36', Math.sin(gameTime * 0.005) * 0.5 + 0.5);
+        c3 = 'rgba(255,210,120,0.35)';
+      }
+
+      const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, c1); grad.addColorStop(1, c2);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Stars at night (or inside cave/sky dimensions)
+      if (t > 0.65 || t < 0.1 || currentLevel === 1 || currentLevel === 2) {
+        const starAlpha = currentLevel === 2 ? 0.8 : currentLevel === 1 ? 0.5 : t > 0.75 ? 0.9 : t > 0.65 ? (t - 0.65) / 0.1 * 0.9 : t < 0.05 ? t / 0.05 * 0.9 : 0.9;
+        ctx.fillStyle = `rgba(255,200,220,${starAlpha})`;
+        for (let i = 0; i < 80; i++) {
+          const sx = (i * 137.508 + camX * 0.02) % canvas.width;
+          const sy = (i * 89.3 + camY * 0.01) % 200;
+          ctx.fillRect(sx, sy, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
+        }
+        // Moon
+        if (currentLevel !== 2) {
+          const mx = canvas.width * 0.8 - camX * 0.01;
+          ctx.fillStyle = 'rgba(255,240,200,0.9)';
+          ctx.beginPath(); ctx.arc(mx, 60, 18, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = 'rgba(255,200,220,0.3)';
+          ctx.font = '8px serif'; ctx.textAlign = 'center';
+          ctx.fillText('💕', mx, 64);
+        }
+      }
+
+      // Sun / love-heart sun (only for beach and meadow day)
+      if ((currentLevel === 0 || currentLevel === 3) && t < 0.65 && t > 0.1) {
+        const sunX = canvas.width * (t - 0.1) / 0.55;
+        const sunY = canvas.height * 0.15 - Math.sin((t - 0.1) / 0.55 * Math.PI) * canvas.height * 0.12;
+        ctx.font = '28px serif'; ctx.textAlign = 'center';
+        ctx.fillText(currentLevel === 3 ? '🌇' : (t > 0.45 ? '🌇' : '☀️'), sunX, sunY);
+      }
+
+      // Clouds (mostly sky/beach levels)
+      if (currentLevel !== 2) {
+        for (let i = 0; i < 8; i++) {
+          const cx2 = ((i * 400 - gameTime * 0.3 + camX * 0.1) % ((WORLD_W + 10) * TILE)) - TILE;
+          const cy2 = 40 + Math.sin(i * 2.1) * 30;
+          if (cx2 - camX < -80 || cx2 - camX > canvas.width + 80) continue;
+          ctx.fillStyle = currentLevel === 1 ? 'rgba(255,240,248,0.85)' : 'rgba(255,255,255,0.75)';
+          const sx = cx2 - camX, sy = cy2 - camY * 0.1;
+          if (sy < 0 || sy > canvas.height * 0.5) continue;
+          ctx.fillRect(sx, sy, 70, 18);
+          ctx.fillRect(sx + 10, sy - 10, 50, 16);
+          ctx.fillRect(sx + 20, sy - 18, 30, 14);
+          if (i % 3 === 0) { ctx.font = '10px serif'; ctx.fillText('💗', sx + 35, sy + 14); }
+        }
+      }
+
+      // Falling hearts (love rain) sometimes
+      if (t > 0.72 || currentLevel === 1 || currentLevel === 2) {
+        ctx.fillStyle = 'rgba(255,100,160,0.5)';
+        for (let i = 0; i < 12; i++) {
+          const hx = ((i * 173 + gameTime * 1.2) % canvas.width);
+          const hy = ((i * 91 + gameTime * 2.1) % canvas.height);
+          ctx.font = '8px serif'; ctx.fillText('💕', hx, hy);
+        }
+      }
+    }
+
+    function drawBlock(c, r) {
+      const id = getBlock(c, r);
+      if (id === B.AIR) return;
+      const def = BLOCKS[id]; if (!def || !def.color) return;
+      const x = c * TILE - camX, y = r * TILE - camY;
+      if (x < -TILE || x > canvas.width + TILE || y < -TILE || y > canvas.height + TILE) return;
+
+      const col = def.color;
+
+      // Transparent blocks
+      if (def.transparent) {
+        ctx.globalAlpha = 0.55;
+        ctx.fillStyle = col[0];
+        ctx.fillRect(x, y, TILE, TILE);
+        ctx.globalAlpha = 1;
+        if (id === B.HEART_GLASS) {
+          ctx.font = '14px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('💗', x + TILE / 2, y + TILE / 2);
+        }
+        return;
+      }
+
+      // Fence
+      if (def.fence) {
+        ctx.fillStyle = col[0];
+        ctx.fillRect(x + TILE / 2 - 3, y, 6, TILE);
+        ctx.fillRect(x + 4, y + 6, TILE - 8, 5);
+        ctx.fillRect(x + 4, y + 18, TILE - 8, 5);
+        return;
+      }
+
+      // Base color
+      ctx.fillStyle = col[0];
+      ctx.fillRect(x, y, TILE, TILE);
+
+      // Highlight top-left
+      ctx.fillStyle = col[2];
+      ctx.fillRect(x, y, TILE, 2);
+      ctx.fillRect(x, y, 2, TILE);
+
+      // Shadow bottom-right
+      ctx.fillStyle = col[1];
+      ctx.fillRect(x, y + TILE - 2, TILE, 2);
+      ctx.fillRect(x + TILE - 2, y, 2, TILE);
+
+      // Texture
+      ctx.fillStyle = col[1];
+      for (let i = 0; i < 5; i++) {
+        const tx = x + 3 + (i % 3) * 9 + (i > 2 ? 4 : 0);
+        const ty = y + 4 + Math.floor(i / 3) * 14;
+        ctx.fillRect(tx, ty, 4, 3);
+      }
+
+      // Special icons / overlays
+      ctx.font = '13px serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      if (id === B.LOVE_BRICK) { ctx.fillText('💗', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.ROSE) { ctx.font = '18px serif'; ctx.fillText('🌹', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.CHEST) { ctx.fillText('📦', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.DIAMOND_ORE) { ctx.fillText('💎', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.LOVE_ORE) { ctx.fillText('💗', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.GOLD_ORE) { ctx.fillText('⭐', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.PHOTO_BLOCK) { ctx.fillText('📸', x + TILE / 2, y + TILE / 2); }
+      else if (id === B.LEAVES) { ctx.fillStyle = 'rgba(80,180,60,0.3)'; ctx.fillRect(x, y, TILE, TILE); }
+      else if (id === B.WOOD) {
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        for (let i = 4; i < TILE; i += 8) ctx.fillRect(x, y + i, TILE, 1);
+      }
+    }
+
+    function drawPlayer() {
+      const px = player.x - camX, py = player.y - camY;
+      const bob = player.onGround ? Math.sin(player.animT * 0.18) * 2 : 0;
+      const flip = player.facing < 0 ? -1 : 1;
+
+      ctx.save();
+      ctx.translate(px + player.w / 2, py);
+      ctx.scale(flip, 1);
+
+      const bx = -player.w / 2;
+
+      // 1. Soft Dynamic Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.16)';
+      ctx.fillRect(bx + 2, player.h + bob, player.w - 4, 3);
+
+      // 2. High-Waisted Blue Denim Jeans & White Sneakers
+      const legSwing = player.vx !== 0 && player.onGround ? Math.sin(player.animT * 0.25) * 5 : 0;
+
+      // Denim jeans base color (`#3a5fa0`)
+      ctx.fillStyle = '#3a5fa0';
+      ctx.fillRect(bx + 2, 14 + bob, 6, 11);
+      ctx.fillRect(bx + 12, 14 + bob - legSwing, 6, 11 + legSwing);
+
+      // Denim wash highlights for texture (`#5c85c1`)
+      ctx.fillStyle = '#5c85c1';
+      ctx.fillRect(bx + 3, 16 + bob, 2, 6);
+      ctx.fillRect(bx + 13, 16 + bob - legSwing, 2, 6);
+
+      // Dark belt with a shiny gold buckle
+      ctx.fillStyle = '#1e1e1e'; // dark belt
+      ctx.fillRect(bx + 2, 13 + bob, 16, 1);
+      ctx.fillStyle = '#ffd700'; // gold buckle
+      ctx.fillRect(bx + 9, 12 + bob, 2, 2);
+
+      // platform white sneakers
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(bx + 1, 25 + bob, 7, 3);
+      ctx.fillRect(bx + 11, 25 - legSwing + bob, 7, 3);
+      ctx.fillStyle = '#e06b53'; // peach sneaker sole
+      ctx.fillRect(bx + 1, 28 + bob, 7, 1);
+      ctx.fillRect(bx + 11, 28 - legSwing + bob, 7, 1);
+
+      // 3. LAYERED FLOWING BROWNISH HAIR (BACK) - waist-length with active wind sway!
+      const hairSway = Math.sin(gameTime * 0.08) * 2;
+      ctx.fillStyle = '#8d583c'; // beautiful rich warm milk-chocolate brown base
+      ctx.fillRect(bx + 1 + hairSway, bob - 3, 18, 22);
+
+      // Chestnut and honey highlights strands (Back)
+      ctx.fillStyle = '#5c351f'; // lowlights
+      ctx.fillRect(bx + 2 + hairSway, bob + 2, 3, 16);
+      ctx.fillRect(bx + 15 + hairSway, bob + 2, 3, 16);
+      ctx.fillStyle = '#c59b6d'; // glowing golden-honey highlights
+      ctx.fillRect(bx + 4 + hairSway, bob + 5, 2, 11);
+      ctx.fillRect(bx + 14 + hairSway, bob + 5, 2, 11);
+
+      // 4. Stylish Crop Top (Sky-blue)
+      ctx.fillStyle = '#aee2ff'; // Crop-top
+      ctx.fillRect(bx + 3, 6 + bob, 14, 6);
+
+      // Fine spaghetti shoulder straps (white)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(bx + 4, 5 + bob, 1, 1);
+      ctx.fillRect(bx + 15, 5 + bob, 1, 1);
+
+      // Exposed cute midriff
+      ctx.fillStyle = '#fcd4b9';
+      ctx.fillRect(bx + 3, 12 + bob, 14, 1);
+
+      // 5. Silver Chain & Heart Gem Necklace
+      ctx.fillStyle = '#fcd4b9'; // neck
+      ctx.fillRect(bx + 7, 4 + bob, 6, 2);
+      // Elegant black choker
+      ctx.fillStyle = '#1e1e1e';
+      ctx.fillRect(bx + 7, 5 + bob, 6, 1);
+      // Glistening silver chain + shiny pink heart diamond pendant
+      ctx.fillStyle = '#d5d9e0'; // silver chain link
+      ctx.fillRect(bx + 8, 7 + bob, 4, 1);
+      ctx.fillStyle = '#ff6b9d'; // glowing pink gemstone
+      ctx.fillRect(bx + 9, 8 + bob, 2, 2);
+
+      // Slender arms
+      const armSwing = player.vx !== 0 && player.onGround ? Math.sin(player.animT * 0.25) * 6 : 0;
+      ctx.fillStyle = '#fcd4b9';
+      ctx.fillRect(bx + 0, 7 + bob + armSwing, 3, 9);
+      ctx.fillRect(bx + 17, 7 + bob - armSwing, 3, 9);
+
+      // 6. Pretty Face & Head
+      ctx.fillStyle = '#fcd4b9';
+      ctx.fillRect(bx + 3, bob - 8, 14, 13);
+
+      // HAIR FRAMING & LUSH FRINGE (FRONT) - long side locks
+      ctx.fillStyle = '#8d583c'; // beautiful rich warm milk-chocolate brown base
+      ctx.fillRect(bx + 2, bob - 9, 16, 5); // crown
+      // Long side locks flowing down past her waist
+      ctx.fillRect(bx + 1 + hairSway * 0.6, bob - 4, 3, 20);
+      ctx.fillRect(bx + 16 + hairSway * 0.6, bob - 4, 3, 20);
+
+      // Shimmering highlights (Front locks)
+      ctx.fillStyle = '#c59b6d'; // glowing golden-honey highlights
+      ctx.fillRect(bx + 2 + hairSway * 0.6, bob + 2, 1, 12);
+      ctx.fillRect(bx + 17 + hairSway * 0.6, bob + 2, 1, 12);
+      ctx.fillStyle = '#7e4f35';
+      ctx.fillRect(bx + 4, bob - 8, 4, 1);
+      ctx.fillRect(bx + 12, bob - 8, 3, 1);
+
+      // Gold Star Hairclips!
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(bx + 13, bob - 6, 2, 2);
+      ctx.fillRect(bx + 5, bob - 6, 1, 1);
+
+      // 7. EXQUISITE BEAUTIFUL EYES (Large, Shaded Hazel-Gold Gradient)
+      // Sharp eyeliner and eyelashes
+      ctx.fillStyle = '#1c0d06'; // Eyelashes & Brows
+      ctx.fillRect(bx + 5, bob - 4, 4, 1);
+      ctx.fillRect(bx + 11, bob - 4, 4, 1);
+      ctx.fillRect(bx + 4, bob - 3, 1, 1); // wing eyeliner left
+      ctx.fillRect(bx + 15, bob - 3, 1, 1); // wing eyeliner right
+
+      // Stunning Hazel-Honey Eyes Gradient
+      ctx.fillStyle = '#4b2e1e'; // deep chocolate outer eye ring
+      ctx.fillRect(bx + 5, bob - 3, 3, 3);
+      ctx.fillRect(bx + 12, bob - 3, 3, 3);
+      ctx.fillStyle = '#c88f46'; // warm honey golden inner iris
+      ctx.fillRect(bx + 6, bob - 2, 1, 2);
+      ctx.fillRect(bx + 13, bob - 2, 1, 2);
+
+      // Captivating Double Sparkle Glint (Anime-style reflection)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(bx + 5, bob - 3, 1, 1); // main glint left
+      ctx.fillRect(bx + 6, bob - 2, 1, 1); // sub glint left
+      ctx.fillRect(bx + 12, bob - 3, 1, 1); // main glint right
+      ctx.fillRect(bx + 13, bob - 2, 1, 1); // sub glint right
+
+      // Glowing peach blush
+      ctx.fillStyle = 'rgba(255, 115, 80, 0.6)';
+      ctx.fillRect(bx + 5, bob, 3, 2);
+      ctx.fillRect(bx + 12, bob, 3, 2);
+
+      // Curved Pretty Smile
+      ctx.fillStyle = '#e06b53';
+      ctx.fillRect(bx + 7, bob + 3, 6, 2);
+      ctx.fillStyle = '#fcd4b9'; // smile carve
+      ctx.fillRect(bx + 9, bob + 3, 2, 1);
+
+      // 8. Tool / Block rendering
+      if (!buildMode) {
+        ctx.fillStyle = '#888';
+        ctx.fillRect(bx + 18, 7 + bob, 2, 9);
+        ctx.fillStyle = '#8B5E3C';
+        ctx.fillRect(bx + 14, 4 + bob, 6, 5);
+      } else {
+        const bi = HOTBAR[selectedSlot];
+        ctx.font = '12px serif'; ctx.textAlign = 'left';
+        ctx.fillText(BLOCKS[bi]?.icon || '', bx + 17, 13 + bob);
+      }
+
+      ctx.restore();
+    }
+
+    function drawTargetHighlight() {
+      const t = getTargetBlock(); if (!t) return;
+      const [c, r] = t;
+      const x = c * TILE - camX, y = r * TILE - camY;
+      ctx.strokeStyle = buildMode ? '#ff6b9d' : 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 1, y + 1, TILE - 2, TILE - 2);
+      ctx.fillStyle = buildMode ? 'rgba(255,107,157,0.15)' : 'rgba(255,255,255,0.1)';
+      ctx.fillRect(x, y, TILE, TILE);
+    }
+
+    function drawDepthFog() {
+      const py = player.y / TILE;
+      const surfaceRow = 38;
+      const depth = Math.max(0, (py - surfaceRow) / 20);
+      if (depth > 0) {
+        const fog = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        fog.addColorStop(0, `rgba(0,0,0,${Math.min(depth * 0.5, 0.6)})`);
+        fog.addColorStop(1, `rgba(0,0,0,${Math.min(depth * 0.7, 0.8)})`);
+        ctx.fillStyle = fog;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    function renderMinimap() {
+      mmCtx.fillStyle = '#0a0a1a';
+      mmCtx.fillRect(0, 0, 100, 60);
+      const scaleX = 100 / WORLD_W, scaleY = 60 / WORLD_H;
+      // Sample world
+      for (let c = 0; c < WORLD_W; c += 2) for (let r = 0; r < WORLD_H; r += 2) {
+        const b = getBlock(c, r);
+        if (b === B.AIR) continue;
+        const col = b === B.GRASS ? '#5d9e3f' : b === B.DIRT ? '#8B5E3C' : b === B.STONE ? '#888' : b === B.DEEP_STONE ? '#444' : b === B.BEDROCK ? '#222' : b === B.LOVE_BRICK ? '#ff6b9d' : b === B.WOOD ? '#6b4226' : b === B.LEAVES ? '#2d7a1e' : '#666';
+        mmCtx.fillStyle = col;
+        mmCtx.fillRect(c * scaleX, r * scaleY, 2, 2);
+      }
+      // Player dot
+      mmCtx.fillStyle = '#fff';
+      mmCtx.fillRect(player.x / TILE * scaleX - 2, player.y / TILE * scaleY - 2, 4, 4);
+      // Camera rect
+      mmCtx.strokeStyle = 'rgba(255,107,157,0.5)';
+      mmCtx.lineWidth = 1;
+      mmCtx.strokeRect(camX / TILE * scaleX, camY / TILE * scaleY, (canvas.width / TILE) * scaleX, (canvas.height / TILE) * scaleY);
+    }
+
+    // ── Particles ──
+    let particles = [];
+
+    function spawnBreakParticles(wx, wy, blockId) {
+      const col = BLOCKS[blockId]?.color?.[0] || '#888';
+      for (let i = 0; i < 10; i++) {
+        particles.push({
+          x: wx - camX, y: wy - camY,
+          vx: (Math.random() - 0.5) * 5, vy: -(Math.random() * 4 + 1),
+          life: 1, color: col, size: 3 + Math.random() * 4,
+          type: 'block'
+        });
+      }
+      // Love special
+      if (blockId === B.LOVE_BRICK || blockId === B.LOVE_ORE) spawnLoveParticles(wx - camX, wy - camY);
+    }
+
+    function spawnLoveParticles(sx, sy) {
+      const emojis = ['💗', '💕', '❤️', '✨', '💖'];
+      for (let i = 0; i < 6; i++) {
+        particles.push({
+          x: sx, y: sy,
+          vx: (Math.random() - 0.5) * 4, vy: -(Math.random() * 4 + 2),
+          life: 1, size: 12 + Math.random() * 8,
+          type: 'emoji', emoji: emojis[Math.floor(Math.random() * emojis.length)]
+        });
+      }
+    }
+
+    function updateParticles() {
+      particles = particles.filter(p => p.life > 0);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.025;
+      });
+    }
+
+    function drawParticles() {
+      pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+      particles.forEach(p => {
+        pCtx.globalAlpha = p.life;
+        if (p.type === 'block') {
+          pCtx.fillStyle = p.color;
+          pCtx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+        } else {
+          pCtx.font = `${p.size}px serif`;
+          pCtx.textAlign = 'center';
+          pCtx.fillText(p.emoji, p.x, p.y);
+        }
+      });
+      pCtx.globalAlpha = 1;
+    }
+
+    function nextLevel() {
+      currentLevel = (currentLevel + 1) % LEVELS.length;
+      generateWorld();
+      const btn = document.getElementById('levelBtn');
+      if (btn) {
+        btn.textContent = LEVELS[currentLevel].name;
+        btn.style.background = LEVELS[currentLevel].themeColor;
+      }
+      // Flush particles globally
+      spawnLoveParticles(canvas.width / 2, canvas.height / 2);
+    }
+
+    // ── Secrets / Discoveries ──
+    function revealSecret(type) {
+      if (type === 'portal') {
+        nextLevel();
+        return;
+      }
+      totalFinds++;
+      document.getElementById('findCount').textContent = totalFinds;
+      let icon, label, msg, photo = '';
+
+      if (type === 'love') {
+        icon = '💗'; label = 'LOVE NOTE FOUND!';
+        msg = getQuote();
+      } else if (type === 'diamond') {
+        icon = '💎'; label = 'RARE TREASURE UNEARTHED!';
+        msg = '✨ ' + getQuote();
+      } else if (type === 'gold') {
+        icon = '⭐'; label = 'GOLDEN MEMORY!';
+        msg = '🌟 ' + getQuote();
+      } else if (type === 'photo') {
+        icon = '📸'; label = 'OUR PRECIOUS MEMORY!';
+        msg = getQuote();
+        if (PHOTOS.length) photo = PHOTOS[Math.floor(Math.random() * PHOTOS.length)];
+      } else if (type === 'chest') {
+        icon = '📦'; label = 'MEMORY CHEST OPENED!';
+        msg = '💌 ' + getQuote() + '\n\n— with all my love ❤️';
+      }
+      showPopup(icon, label, msg, photo);
+    }
+
+    function getQuote() {
+      const avail = LOVE_QUOTES.map((_, i) => i).filter(i => !usedQuoteIdx.includes(i));
+      if (!avail.length) usedQuoteIdx = [];
+      const idx = avail.length ? avail[Math.floor(Math.random() * avail.length)] : Math.floor(Math.random() * LOVE_QUOTES.length);
+      usedQuoteIdx.push(idx);
+      return LOVE_QUOTES[idx];
+    }
+
+    function showPopup(icon, type, msg, photo) {
+      document.getElementById('popIcon').textContent = icon;
+      document.getElementById('popType').textContent = type;
+      document.getElementById('popMsg').textContent = msg;
+      const img = document.getElementById('popPhoto');
+      if (photo) { img.src = photo; img.style.display = 'block'; } else img.style.display = 'none';
+      document.getElementById('popup').classList.add('open');
+    }
+    function closePopup() { document.getElementById('popup').classList.remove('open'); }
+
+    // ── UI Updates ──
+    function updateHotbar() {
+      const row = document.getElementById('hotbarRow');
+      row.innerHTML = '';
+      HOTBAR.forEach((id, i) => {
+        const def = BLOCKS[id];
+        const slot = document.createElement('div');
+        slot.className = 'hslot' + (i === selectedSlot ? ' active' : '');
+        slot.innerHTML = `<span class="slotNum">${i + 1}</span><span class="slotIcon">${def.icon}</span><span class="slotName">${def.name.slice(0, 6)}</span>`;
+        slot.onclick = () => { selectedSlot = i; updateHotbar(); };
+        row.appendChild(slot);
+      });
+    }
+
+    function updateHealth() {
+      const row = document.getElementById('healthRow');
+      row.innerHTML = '';
+      for (let i = 0; i < player.maxHp; i++) {
+        const h = document.createElement('span');
+        h.className = 'hrt';
+        h.textContent = i < player.hp ? '❤️' : '🖤';
+        row.appendChild(h);
+      }
+    }
+
+    function updateModeDisplay() {
+      document.getElementById('modeDisplay').textContent = buildMode ? '🏗 BUILD MODE' : '⛏ DIG MODE';
+    }
+
+    function buildInventoryUI() {
+      const grid = document.getElementById('invGrid');
+      grid.innerHTML = '';
+      const allBlocks = [B.GRASS, B.DIRT, B.STONE, B.DEEP_STONE, B.WOOD, B.PLANK, B.LEAVES, B.SAND, B.LOVE_BRICK, B.HEART_GLASS, B.ROSE, B.CHEST, B.CLOUD_BLOCK, B.GLASS, B.FENCE, B.PORTAL, B.PHOTO_BLOCK, B.DIAMOND_ORE, B.LOVE_ORE, B.GOLD_ORE];
+      allBlocks.forEach(id => {
+        const def = BLOCKS[id]; if (!def) return;
+        const slot = document.createElement('div');
+        slot.className = 'invSlot';
+        slot.innerHTML = `${def.icon}<span>${def.name}</span>`;
+        slot.title = def.name;
+        slot.onclick = () => {
+          HOTBAR[selectedSlot] = id;
+          updateHotbar();
+          toggleInventory();
+        };
+        grid.appendChild(slot);
+      });
+    }
+
+    function toggleInventory() {
+      const inv = document.getElementById('inventory');
+      if (inv.classList.contains('open')) inv.classList.remove('open');
+      else { buildInventoryUI(); inv.classList.add('open'); }
+    }
+
+    // ── Quote ticker ──
+    function updateQuoteTicker() {
+      const el = document.getElementById('quoteTicker');
+      if (quotePos >= quoteText.length + 30) {
+        quotePos = 0;
+        quoteText = LOVE_QUOTES[Math.floor(Math.random() * LOVE_QUOTES.length)];
+      }
+      const disp = quoteText.substring(Math.max(0, quotePos - 30), quotePos);
+      el.textContent = '💕 ' + disp + ' 💕';
+      quotePos++;
+    }
+
+    // ── Day/night cycle ──
+    function updateDayCycle() {
+      const t = (gameTime % 1200) / 1200;
+      const dayEl = document.getElementById('dayCounter');
+      if (t < 0.5) dayEl.textContent = `Day ${dayCount} ☀️`;
+      else dayEl.textContent = `Day ${dayCount} 🌙`;
+      if (gameTime % 1200 === 0 && gameTime > 0) dayCount++;
+    }
+
+    // ── Title screen stars ──
+    function makeTitleStars() {
+      const ts = document.getElementById('titleScreen');
+      for (let i = 0; i < 25; i++) {
+        const s = document.createElement('div');
+        s.className = 'titleStar';
+        s.textContent = ['💕', '✨', '💗', '⭐', '🌟'][Math.floor(Math.random() * 5)];
+        s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;font-size:${8 + Math.random() * 14}px;animation-delay:${Math.random() * 2}s;animation-duration:${1.5 + Math.random() * 2}s`;
+        ts.appendChild(s);
+      }
+    }
+
+    // ── Color lerp ──
+    function lerpColor(a, b, t) {
+      const ah = a.replace('#', ''), bh = b.replace('#', '');
+      const ar = parseInt(ah.slice(0, 2), 16), ag = parseInt(ah.slice(2, 4), 16), ab2 = parseInt(ah.slice(4, 6), 16);
+      const br = parseInt(bh.slice(0, 2), 16), bg = parseInt(bh.slice(2, 4), 16), bb2 = parseInt(bh.slice(4, 6), 16);
+      const rr = Math.round(ar + (br - ar) * t), rg = Math.round(ag + (bg - ag) * t), rb = Math.round(ab2 + (bb2 - ab2) * t);
+      return `rgb(${rr},${rg},${rb})`;
+    }
+
+    // ── Main game loop ──
+    let lastTime = 0;
+    function gameLoop(ts) {
+      if (!gameRunning) { requestAnimationFrame(gameLoop); return; }
+      const dt = Math.min((ts - lastTime) / 16, 3); lastTime = ts;
+
+      gameTime++;
+
+      // Input
+      if (leftClick && !buildMode) handleDig();
+      if ((rightClick || (leftClick && buildMode))) handlePlace();
+
+      updatePlayer(dt);
+      updateParticles();
+
+      // Draw
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawSky();
+
+      // World blocks
+      const c0 = Math.max(0, Math.floor(camX / TILE) - 1);
+      const c1 = Math.min(WORLD_W - 1, Math.ceil((camX + canvas.width) / TILE) + 1);
+      const r0 = Math.max(0, Math.floor(camY / TILE) - 1);
+      const r1 = Math.min(WORLD_H - 1, Math.ceil((camY + canvas.height) / TILE) + 1);
+      for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) drawBlock(c, r);
+
+      drawDepthFog();
+      drawTargetHighlight();
+      drawPlayer();
+
+      drawParticles();
+      renderMinimap();
+
+      // Slower updates
+      if (gameTime % 8 === 0) updateQuoteTicker();
+      if (gameTime % 60 === 0) updateDayCycle();
+      if (gameTime % 120 === 0) updateHealth();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // ── Start ──
+    function startGame() {
+      document.getElementById('titleScreen').style.display = 'none';
+      generateWorld();
+      updateHotbar();
+      updateHealth();
+      updateModeDisplay();
+      const btn = document.getElementById('levelBtn');
+      if (btn) {
+        btn.textContent = LEVELS[currentLevel].name;
+        btn.style.background = LEVELS[currentLevel].themeColor;
+      }
+      gameRunning = true;
+      requestAnimationFrame(gameLoop);
+    }
+
+    makeTitleStars();
+    requestAnimationFrame(gameLoop);
+  </script>
 </body>
+
 </html>

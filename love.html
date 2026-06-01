@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💌 You Received a Love Letter!</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --pink: #ff6b9d;
+  --pink-dark: #800030;
+  --pink-light: #ffb3cc;
+  --gold: #ffd700;
+  --bg: #0d0d1a;
+  --text: #eee;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+
+body {
+  font-family: 'Press Start 2P', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+#bgCanvas {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Audio button */
+#audioBtn {
+  position: fixed; top: 16px; right: 16px; z-index: 100;
+  background: rgba(0,0,0,0.8); border: 2px solid var(--pink);
+  color: var(--pink); font-family: 'Press Start 2P', monospace;
+  font-size: 6px; padding: 8px 12px; cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+}
+#audioBtn:hover { background: var(--pink); color: #fff; }
+
+/* ── Interactive Envelope ── */
+#envelopeContainer {
+  position: relative; z-index: 10;
+  width: 320px; height: 220px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 1s ease;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+}
+
+.envelope {
+  position: absolute; inset: 0;
+  background: #ff6b9d;
+  border: 4px solid #ff3b75;
+  border-bottom: 6px solid var(--pink-dark);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+
+/* Back flap */
+.envelope::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, #ff4d80 50%, #ff1a53 50%);
+  clip-path: polygon(0 0, 100% 0, 50% 50%);
+}
+
+.flap {
+  position: absolute; top: 0; left: 0; right: 0; height: 110px;
+  background: #ff6b9d;
+  border: 4px solid #ff3b75;
+  border-bottom: none;
+  transform-origin: top center;
+  transition: transform 0.6s ease;
+  z-index: 5;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.envelope.open .flap {
+  transform: rotateX(180deg);
+  z-index: 1;
+}
+
+/* Front fold left/right/bottom visual */
+.pocket {
+  position: absolute; inset: 0;
+  background: transparent;
+  z-index: 4;
+}
+.pocket::before {
+  content: ''; position: absolute; inset: 0;
+  background: #e63970;
+  clip-path: polygon(0 100%, 100% 100%, 50% 45%);
+  border-top: 2px solid #b31a47;
+}
+
+/* Big Seal Button */
+.seal {
+  position: absolute; top: 110px; left: 50%; transform: translate(-50%, -50%);
+  width: 44px; height: 44px; background: var(--gold);
+  border: 3px solid #ccaa00; border-radius: 50%;
+  z-index: 6; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+.envelope.open .seal {
+  display: none;
+}
+
+/* Floating "Click to open" tooltip */
+#promptText {
+  position: absolute; bottom: -45px; left: 0; right: 0;
+  text-align: center; font-size: 6px; color: var(--pink-light);
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+  animation: bounce 1.5s infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* ── The Letter Card inside ── */
+.letterPaper {
+  position: absolute; top: 10px; left: 16px; right: 16px; height: 200px;
+  background: #fff8fc;
+  border: 3px solid #ffb3cc;
+  padding: 16px;
+  color: #1a0010;
+  transform: translateY(0);
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), height 0.8s ease, top 0.8s ease, left 0.8s ease, right 0.8s ease, max-width 0.8s ease;
+  z-index: 3;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Enlarged letter viewing state */
+#envelopeContainer.letter-active {
+  cursor: default;
+}
+#envelopeContainer.letter-active .letterPaper {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 90%; max-width: 500px;
+  height: 80vh;
+  z-index: 100;
+  overflow-y: auto;
+  padding: 30px 24px;
+  border: 5px solid var(--pink);
+  box-shadow: 0 0 30px rgba(255,107,157,0.4), 8px 8px 0 #000;
+}
+
+.letterHeader {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px; color: var(--pink);
+  text-align: center; margin-bottom: 20px;
+  border-bottom: 2px dashed var(--pink-light);
+  padding-bottom: 12px;
+}
+
+.letterBody {
+  font-family: Arial, sans-serif;
+  font-size: 13px; line-height: 1.8; color: #333;
+  white-space: pre-wrap; word-wrap: break-word;
+  margin-bottom: 24px;
+}
+
+.letterSig {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px; color: var(--gold);
+  text-align: right;
+  text-shadow: 1px 1px 0 #000;
+  margin-top: 16px;
+}
+
+/* Audio/Chime control and visual polish */
+.sparkle {
+  position: absolute; pointer-events: none;
+  font-size: 14px; animation: flySparkle 1.2s ease-out forwards;
+  z-index: 999;
+}
+@keyframes flySparkle {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(1.2); opacity: 0; }
+}
+
+/* Hide envelope layers gracefully when full card is open */
+.envelope.hide-visuals {
+  opacity: 0.15;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<button id="audioBtn" onclick="toggleLoveMelody()">🎵 Play Music</button>
+
+<div id="envelopeContainer" onclick="openEnvelope()">
+  <div class="envelope" id="env">
+    <div class="flap"></div>
+    <div class="pocket"></div>
+    <div class="seal">💖</div>
+  </div>
+  
+  <div class="letterPaper" id="paper" onclick="event.stopPropagation()">
+    <div class="letterHeader">💕 A Love Letter 💕</div>
+    <div class="letterBody" id="letterText">Decoding your special letter...</div>
+    <div class="letterSig" id="letterSig">— with love</div>
+  </div>
+  <div id="promptText">✉️ CLICK TO OPEN LETTER</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// 10 RETRO THEMES
+// ══════════════════════════════════════════════
+const THEMES = [
+  {
+    name: '🌸 Love Meadow',
+    bg: ['#0a1a0a','#1a2a1a'],
+    render(ctx, w, h, t) {
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#87CEEB'); g.addColorStop(1,'#d4f0ff');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle = '#5d9e3f'; ctx.fillRect(0,h*0.7,w,h*0.3);
+      ctx.fillStyle = '#4a7e31'; ctx.fillRect(0,h*0.7,w,8);
+      drawPixelTree(ctx, w*0.1, h*0.7, t);
+      drawPixelTree(ctx, w*0.85, h*0.7, t);
+      for(let i=0;i<8;i++) {
+        const fx = (i*137+t*0.3)%w;
+        const fy = h*0.72+Math.sin(i)*20;
+        ctx.fillStyle='#ff6b9d'; ctx.fillRect(fx,fy,4,4);
+        ctx.fillStyle='#ffd700'; ctx.fillRect(fx+1,fy+1,2,2);
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.3);
+      drawPixelClouds(ctx, w, h, t);
+      drawMiniCabin(ctx, w*0.5-20, h*0.55, t);
+    }
+  },
+  {
+    name: '💎 Crystal Caves',
+    bg: ['#050010','#0a0020'],
+    render(ctx, w, h, t) {
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#05000f'); g.addColorStop(1,'#1a0030');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='#333';
+      for(let i=0;i<6;i++) {
+        const x=i*(w/6)+30;
+        const hh=20+Math.sin(i*2)*15;
+        ctx.fillRect(x,0,14,hh);
+      }
+      for(let i=0;i<5;i++) {
+        const x=i*(w/5)+15;
+        const hh=15+Math.cos(i*1.7)*12;
+        ctx.fillRect(x,h-hh,12,hh);
+      }
+      const gemColors=['#ff6b9d','#4fc3f7','#ffd700','#ce93d8','#80cbc4'];
+      for(let i=0;i<12;i++) {
+        const gx=(i*167+50)%w, gy=(i*89+30)%(h-20)+10;
+        const pulse=0.5+0.5*Math.sin(t*0.05+i);
+        ctx.globalAlpha=pulse;
+        ctx.fillStyle=gemColors[i%gemColors.length];
+        ctx.fillRect(gx,gy,6,6);
+        ctx.fillRect(gx+2,gy-2,2,2);
+        ctx.globalAlpha=0.3*pulse;
+        ctx.fillRect(gx-2,gy-2,10,10);
+        ctx.globalAlpha=1;
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.5, true);
+      ctx.globalAlpha=0.4;
+      ctx.fillStyle='#ff6b9d';
+      for(let i=0;i<4;i++) {
+        const vx=(i*210+80)%w, vy=(i*130+40)%(h-30)+15;
+        ctx.fillRect(vx,vy,20,4);
+        ctx.fillRect(vx+6,vy+4,8,3);
+      }
+      ctx.globalAlpha=1;
+    }
+  },
+  {
+    name: '☁️ Cloud Kingdom',
+    bg: ['#aee2ff','#ffd0f5'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      const col1=lerpColor('#aee2ff','#ffc0e0',Math.sin(t*0.02)*0.5+0.5);
+      const col2=lerpColor('#ffd0f5','#ffffff',Math.sin(t*0.015)*0.5+0.5);
+      g.addColorStop(0,col1); g.addColorStop(1,col2);
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      for(let i=0;i<4;i++) {
+        const cx2=(i*200+t*0.2)%w;
+        const cy2=40+i*40;
+        ctx.fillStyle='rgba(255,255,255,0.85)';
+        ctx.fillRect(cx2-40,cy2,80,18);
+        ctx.fillRect(cx2-25,cy2-10,50,14);
+        ctx.fillStyle='#ff6b9d';
+        for(let b=0;b<5;b++) ctx.fillRect(cx2-38+b*16,cy2-4,14,6);
+      }
+      for(let i=0;i<30;i++) {
+        const sx=(i*137.5)%w, sy=(i*89)%h;
+        const p=0.4+0.6*Math.sin(t*0.08+i);
+        ctx.globalAlpha=p*0.5;
+        ctx.fillStyle='#ffb3cc'; ctx.fillRect(sx,sy,2,2);
+        ctx.globalAlpha=1;
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.6);
+    }
+  },
+  {
+    name: '🌅 Sunset Beach',
+    bg: ['#ff5e36','#ffa834'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      const r=lerpColor('#ff5e36','#ffa834',Math.sin(t*0.01)*0.5+0.5);
+      g.addColorStop(0,'#1a0a3a');
+      g.addColorStop(0.4,r);
+      g.addColorStop(0.7,'#ffcc66');
+      g.addColorStop(1,'#ff9999');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='rgba(255,220,50,0.9)';
+      ctx.beginPath(); ctx.arc(w/2,h*0.4,22,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,200,0,0.4)';
+      ctx.beginPath(); ctx.arc(w/2,h*0.4,32,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#1565c0';
+      ctx.fillRect(0,h*0.65,w,h*0.35);
+      ctx.fillStyle='rgba(255,255,200,0.3)';
+      for(let i=0;i<8;i++) {
+        const sx=(i*80+t*2)%w;
+        ctx.fillRect(sx,h*0.65+8+i*4,30,3);
+      }
+      ctx.fillStyle='#e8d5a3'; ctx.fillRect(0,h*0.65-8,w,16);
+      drawPalm(ctx, w*0.15, h*0.65-8);
+      drawPalm(ctx, w*0.85, h*0.65-8);
+      drawFloatingHearts(ctx, w, h, t, 0.25);
+    }
+  },
+  {
+    name: '🌙 Midnight Stars',
+    bg: ['#000010','#00001a'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#000010'); g.addColorStop(1,'#0a0020');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      for(let i=0;i<60;i++) {
+        const sx=(i*173)%w, sy=(i*97)%h;
+        const p=0.3+0.7*Math.sin(t*0.06+i*0.7);
+        ctx.globalAlpha=p;
+        ctx.fillStyle='#fff'; ctx.fillRect(sx,sy,i%5===0?2:1,i%5===0?2:1);
+        ctx.globalAlpha=1;
+      }
+      ctx.fillStyle='rgba(255,240,200,0.95)';
+      ctx.beginPath(); ctx.arc(w*0.75,h*0.2,24,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(200,180,150,0.4)';
+      ctx.beginPath(); ctx.arc(w*0.75+8,h*0.2-6,7,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,100,150,0.8)';
+      ctx.font='10px serif'; ctx.textAlign='center';
+      ctx.fillText('💕',w*0.75,h*0.2+4);
+      for(let i=0;i<3;i++) {
+        const p=(t*2+i*200)%400;
+        if(p<200) {
+          const sx=p*(w/200), sy=p*0.4+20;
+          ctx.globalAlpha=1-p/200;
+          ctx.fillStyle='#ffd700';
+          ctx.fillRect(sx,sy,6,2);
+          ctx.fillRect(sx-8,sy,4,1);
+          ctx.fillRect(sx-14,sy+1,3,1);
+          ctx.globalAlpha=1;
+        }
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.15, true);
+    }
+  },
+  {
+    name: '🌹 Rose Garden',
+    bg: ['#1a0010','#2a0020'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#120010'); g.addColorStop(1,'#2d0030');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='#2d1a00'; ctx.fillRect(0,h*0.75,w,h*0.25);
+      ctx.fillStyle='#3d2800'; ctx.fillRect(0,h*0.75,w,4);
+      for(let i=0;i<7;i++) {
+        const rx=i*(w/7)+20, ry=h*0.75;
+        const sway=Math.sin(t*0.04+i)*3;
+        ctx.fillStyle='#2d5a1e';
+        ctx.fillRect(rx+sway,ry-30,3,30);
+        ctx.fillStyle='#3d7a2e';
+        ctx.fillRect(rx+sway+3,ry-18,8,4);
+        ctx.fillStyle='#e63950';
+        ctx.fillRect(rx+sway-4,ry-38,10,10);
+        ctx.fillStyle='#ff6b9d';
+        ctx.fillRect(rx+sway-2,ry-40,6,6);
+        ctx.fillStyle='#ffb3cc';
+        ctx.fillRect(rx+sway,ry-42,2,2);
+      }
+      for(let i=0;i<10;i++) {
+        const px=((i*137+t*0.8)%w);
+        const py=((i*89+t*1.2)%h);
+        ctx.fillStyle='#ff6b9d';
+        ctx.globalAlpha=0.6;
+        ctx.fillRect(px,py,4,3);
+        ctx.globalAlpha=1;
+      }
+      for(let i=0;i<20;i++) {
+        const lx=(i*167+30)%w, ly=(i*113+20)%(h*0.7);
+        const p=0.3+0.7*Math.sin(t*0.1+i);
+        ctx.globalAlpha=p*0.7;
+        ctx.fillStyle='#ffd700'; ctx.fillRect(lx,ly,2,2);
+        ctx.globalAlpha=1;
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.4);
+    }
+  },
+  {
+    name: '💗 Pink Pixel City',
+    bg: ['#1a0030','#0a001a'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#120020'); g.addColorStop(1,'#1a0030');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      const buildings=[
+        {x:0,w:50,h:120,c:'#2a0040'},
+        {x:45,w:35,h:160,c:'#1e0038'},
+        {x:75,w:60,h:100,c:'#2e0050'},
+        {x:130,w:45,h:180,c:'#250044'},
+        {x:170,w:55,h:130,c:'#300060'},
+        {x:220,w:40,h:150,c:'#1c0034'},
+        {x:255,w:65,h:110,c:'#280048'},
+        {x:315,w:50,h:170,c:'#220040'},
+        {x:360,w:40,h:140,c:'#2c0054'},
+      ];
+      buildings.forEach(b => {
+        if(b.x>w) return;
+        ctx.fillStyle=b.c; ctx.fillRect(b.x,h-b.h,b.w,b.h);
+        for(let wy2=h-b.h+10;wy2<h-10;wy2+=20) {
+          for(let wx2=b.x+6;wx2<b.x+b.w-6;wx2+=14) {
+            const lit=Math.sin(t*0.05+wx2*0.1+wy2*0.1)>0.3;
+            ctx.fillStyle=lit?'#ff6b9d':'#2a002a';
+            ctx.fillRect(wx2,wy2,6,8);
+          }
+        }
+      });
+      ctx.globalAlpha=0.6+0.4*Math.sin(t*0.1);
+      ctx.fillStyle='#ff6b9d';
+      ctx.font='8px serif'; ctx.textAlign='center';
+      ctx.fillText('💕',w*0.3,h-80);
+      ctx.fillText('💗',w*0.6,h-120);
+      ctx.fillText('❤️',w*0.15,h-100);
+      ctx.globalAlpha=1;
+      drawFloatingHearts(ctx, w, h, t, 0.3, true);
+    }
+  },
+  {
+    name: '🌺 Cherry Blossom',
+    bg: ['#fff0f8','#ffe0f0'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#fff8fc'); g.addColorStop(1,'#ffd4e8');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      ctx.fillStyle='#c8f0a0'; ctx.fillRect(0,h*0.8,w,h*0.2);
+      ctx.fillStyle='#a8d080'; ctx.fillRect(0,h*0.8,w,5);
+      drawCherryTree(ctx, w*0.2, h*0.8, t, 60);
+      drawCherryTree(ctx, w*0.7, h*0.8, t, 50);
+      for(let i=0;i<20;i++) {
+        const px=((i*173+t*1.5)%w);
+        const py=((i*89+t*2.2)%h);
+        ctx.globalAlpha=0.7;
+        ctx.fillStyle=['#ffb3cc','#ff6b9d','#ffc0cb','#ff8fab'][i%4];
+        ctx.fillRect(px,py,5,3);
+        ctx.globalAlpha=1;
+      }
+      for(let i=0;i<5;i++) {
+        const nx=((i*200+t*0.8+100)%w);
+        const ny=((i*160+t*1.8)%h);
+        ctx.font='10px serif'; ctx.fillText('💌',nx,ny);
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.2);
+    }
+  },
+  {
+    name: '⭐ Golden Galaxy',
+    bg: ['#0a0510','#100a20'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#050208'); g.addColorStop(1,'#0d0820');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      for(let i=0;i<5;i++) {
+        const nx=(i*200+100)%w, ny=(i*130+60)%h;
+        const r=60+i*20;
+        const ng=ctx.createRadialGradient(nx,ny,0,nx,ny,r);
+        ng.addColorStop(0,`rgba(${i%2?255:100},${i%3?100:50},${200-i*30},0.08)`);
+        ng.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=ng; ctx.fillRect(nx-r,ny-r,r*2,r*2);
+      }
+      for(let i=0;i<80;i++) {
+        const sx=(i*173)%w, sy=(i*97)%h;
+        const size=i%10===0?3:i%4===0?2:1;
+        const p=0.4+0.6*Math.sin(t*0.05+i);
+        ctx.globalAlpha=p;
+        ctx.fillStyle=i%5===0?'#ffd700':'#fff';
+        ctx.fillRect(sx,sy,size,size);
+        ctx.globalAlpha=1;
+      }
+      for(let i=0;i<8;i++) {
+        const sx=((i*211+t*1.5)%w), sy=((i*157+t*0.8)%h);
+        const p=0.5+0.5*Math.sin(t*0.15+i);
+        ctx.globalAlpha=p;
+        ctx.fillStyle='#ffd700';
+        ctx.fillRect(sx,sy,4,1); ctx.fillRect(sx+1,sy-1,2,3);
+        ctx.globalAlpha=1;
+      }
+      ctx.fillStyle='rgba(200,130,255,0.6)';
+      ctx.beginPath(); ctx.arc(w*0.8,h*0.25,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,100,200,0.5)';
+      ctx.fillRect(w*0.8-25,h*0.25-3,50,6);
+      drawFloatingHearts(ctx, w, h, t, 0.2, true);
+    }
+  },
+  {
+    name: '🏠 Love Cabin',
+    bg: ['#0a0a1a','#1a1a2e'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#0a0a1a'); g.addColorStop(1,'#1a1a2e');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      for(let i=0;i<50;i++) {
+        const sx=(i*137)%w, sy=(i*89)%(h*0.65);
+        const p=0.3+0.7*Math.sin(t*0.06+i);
+        ctx.globalAlpha=p*0.7; ctx.fillStyle='#ffb3cc';
+        ctx.fillRect(sx,sy,i%4===0?2:1,i%4===0?2:1);
+        ctx.globalAlpha=1;
+      }
+      ctx.fillStyle='rgba(255,240,200,0.9)';
+      ctx.beginPath(); ctx.arc(w*0.8,h*0.15,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#2d4a1e'; ctx.fillRect(0,h*0.68,w,h*0.32);
+      ctx.fillStyle='#5d9e3f'; ctx.fillRect(0,h*0.68,w,8);
+      const cx=w/2, cy=h*0.68;
+      ctx.fillStyle='#6b4226';
+      for(let i=0;i<9;i++) ctx.fillRect(cx-72+i*16,cy,14,6);
+      ctx.fillStyle='#ff6b9d';
+      [[cx-68,cy-60,12,60],[cx+56,cy-60,12,60]].forEach(([x,y,ww,hh])=>ctx.fillRect(x,y,ww,hh));
+      for(let i=0;i<9;i++) {
+        ctx.fillStyle=i%2===0?'#ff6b9d':'#d63d70';
+        ctx.fillRect(cx-68+i*16,cy-62,14,6);
+      }
+      ctx.fillStyle='#d63d70';
+      for(let i=0;i<9;i++) ctx.fillRect(cx-74+i*18,cy-68,16,8);
+      ctx.fillStyle='#4a2d15'; ctx.fillRect(cx-8,cy-40,16,40);
+      ctx.fillStyle='rgba(255,100,150,0.5)';
+      ctx.fillRect(cx-52,cy-50,16,16);
+      ctx.fillRect(cx+36,cy-50,16,16);
+      ctx.fillStyle='#ff6b9d';
+      ctx.font='10px serif'; ctx.textAlign='center';
+      ctx.fillText('💗',cx-44,cy-38);
+      ctx.fillText('💗',cx+44,cy-38);
+      for(let i=0;i<3;i++) {
+        const px=cx+50+Math.sin(t*0.05+i)*4;
+        const py=cy-68-i*12-((t*0.5)%12);
+        ctx.globalAlpha=0.4-i*0.1;
+        ctx.fillStyle='#aaa'; ctx.fillRect(px,py,8,6);
+        ctx.globalAlpha=1;
+      }
+      for(let i=0;i<4;i++) {
+        const rx=cx-90+i*8, ry=cy-1;
+        ctx.fillStyle='#2d5a1e'; ctx.fillRect(rx,ry-16,3,16);
+        ctx.fillStyle='#e63950'; ctx.fillRect(rx-3,ry-22,8,8);
+        ctx.fillStyle='#ff6b9d'; ctx.fillRect(rx-1,ry-24,4,4);
+      }
+      const glow=0.3+0.2*Math.sin(t*0.2);
+      ctx.globalAlpha=glow;
+      ctx.fillStyle='#ff8c00'; ctx.fillRect(cx-6,cy-15,12,12);
+      ctx.globalAlpha=1;
+      drawFloatingHearts(ctx, w, h, t, 0.2);
+    }
+  }
+];
+
+function drawPixelTree(ctx, x, y, t) {
+  const sway=Math.sin(t*0.04)*2;
+  ctx.fillStyle='#6b4226'; ctx.fillRect(x+sway,y-40,8,40);
+  ctx.fillStyle='#2d7a1e'; ctx.fillRect(x-16+sway,y-70,40,32);
+  ctx.fillRect(x-10+sway,y-85,28,24);
+  ctx.fillRect(x-4+sway,y-96,16,18);
+}
+function drawMiniCabin(ctx, x, y, t) {
+  ctx.fillStyle='#ff6b9d'; ctx.fillRect(x,y-30,40,30);
+  ctx.fillStyle='#d63d70'; ctx.fillRect(x-4,y-36,48,8);
+  ctx.fillStyle='#4a2d15'; ctx.fillRect(x+16,y-20,8,20);
+  ctx.fillStyle='rgba(255,150,200,0.5)'; ctx.fillRect(x+4,y-26,8,8); ctx.fillRect(x+28,y-26,8,8);
+}
+function drawFloatingHearts(ctx, w, h, t, speed=0.3, rise=false) {
+  const emojis=['💗','💕','❤️','💖','✨'];
+  for(let i=0;i<8;i++) {
+    const hx=((i*173+t*speed*80)%w);
+    const hy=rise?((h-(i*89+t*speed*60)%h)):((i*89+t*speed*60)%h);
+    ctx.globalAlpha=0.6+0.4*Math.sin(t*0.08+i);
+    ctx.font='12px serif'; ctx.textAlign='center';
+    ctx.fillText(emojis[i%emojis.length],hx,hy);
+    ctx.globalAlpha=1;
+  }
+}
+function drawPixelClouds(ctx, w, h, t) {
+  for(let i=0;i<4;i++) {
+    const cx2=((i*250+t*0.4)%w)-40;
+    const cy2=20+i*18;
+    ctx.fillStyle='rgba(255,255,255,0.8)';
+    ctx.fillRect(cx2,cy2,60,14); ctx.fillRect(cx2+8,cy2-8,44,12);
+  }
+}
+function drawPalm(ctx, x, y) {
+  ctx.fillStyle='#6b4226';
+  for(let i=0;i<8;i++) ctx.fillRect(x+Math.floor(i*0.5),y-i*8,6,8);
+  ctx.fillStyle='#2d7a1e';
+  [[-30,-10,28,8],[-10,-20,24,8],[2,-25,26,8],[10,-10,20,8]].forEach(([dx,dy,ww,hh])=>ctx.fillRect(x+dx,y-64+dy,ww,hh));
+}
+function drawCherryTree(ctx, x, y, t, size) {
+  ctx.fillStyle='#6b4226'; ctx.fillRect(x-3,y-size,6,size);
+  const sway=Math.sin(t*0.04)*3;
+  ctx.fillStyle='rgba(255,120,150,0.7)';
+  ctx.beginPath(); ctx.arc(x+sway,y-size-20,size*0.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,180,200,0.5)';
+  ctx.beginPath(); ctx.arc(x+sway-10,y-size-10,size*0.35,0,Math.PI*2); ctx.fill();
+}
+function lerpColor(a,b,t2) {
+  const ah=a.replace('#',''), bh=b.replace('#','');
+  const ar=parseInt(ah.slice(0,2),16), ag=parseInt(ah.slice(2,4),16), ab2=parseInt(ah.slice(4,6),16);
+  const br=parseInt(bh.slice(0,2),16), bg=parseInt(bh.slice(2,4),16), bb2=parseInt(bh.slice(4,6),16);
+  const rr=Math.round(ar+(br-ar)*t2), rg=Math.round(ag+(bg-ag)*t2), rb=Math.round(ab2+(bb2-ab2)*t2);
+  return `rgb(${rr},${rg},${rb})`;
+}
+
+// ══════════════════════════════════════════════
+// CANVAS INITIALIZATION & DECODING
+// ══════════════════════════════════════════════
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+bgCanvas.width = window.innerWidth;
+bgCanvas.height = window.innerHeight;
+window.addEventListener('resize', () => { bgCanvas.width=window.innerWidth; bgCanvas.height=window.innerHeight; });
+
+let selectedTheme = 0;
+let animT = 0;
+let letterData = { n:'', l:'No letter content found.', t:0, f:'with love', s:'' };
+
+function decodePayload() {
+  const hash = window.location.hash;
+  if (hash.includes('letter=')) {
+    try {
+      const base64 = hash.split('letter=')[1];
+      if (!base64 || base64.trim() === '') {
+        document.getElementById('letterText').textContent = "💌 Waiting for a beautiful love letter... Compose one on letter.html!";
+        return;
+      }
+      const decodedStr = decodeURIComponent(escape(atob(base64)));
+      const parsed = JSON.parse(decodedStr);
+      if (parsed) {
+        letterData = parsed;
+        selectedTheme = parseInt(parsed.t) || 0;
+        document.getElementById('letterText').textContent = parsed.l;
+        document.getElementById('letterSig').textContent = `— ${parsed.f || 'with love 💗'}`;
+        if (parsed.s) {
+          document.title = parsed.s;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to decode letter payload", e);
+      document.getElementById('letterText').textContent = "⚠️ Oh no! The letter got scrambled in transit. Ask them to send it again!";
+    }
+  } else {
+    document.getElementById('letterText').textContent = "💌 No letter loaded. Open your shared link to view your personalized letter!";
+  }
+}
+decodePayload();
+
+function renderBg() {
+  THEMES[selectedTheme].render(bgCtx, bgCanvas.width, bgCanvas.height, animT);
+}
+function loop() {
+  animT++;
+  renderBg();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ══════════════════════════════════════════════
+// INTERACTIVE ENVELOPE CONTROLS & SPARKLES
+// ══════════════════════════════════════════════
+let letterOpened = false;
+
+function openEnvelope() {
+  if (letterOpened) return;
+  letterOpened = true;
+
+  const env = document.getElementById('env');
+  const container = document.getElementById('envelopeContainer');
+  const prompt = document.getElementById('promptText');
+
+  // Play retro opening chime!
+  playChime(true);
+
+  // Animate envelope opening steps
+  env.classList.add('open');
+  prompt.style.display = 'none';
+
+  // Spawn sparkles
+  for (let i = 0; i < 30; i++) {
+    spawnSparkle(window.innerWidth / 2, window.innerHeight / 2);
+  }
+
+  // Slide paper out and enlarge after flap opens
+  setTimeout(() => {
+    container.classList.add('letter-active');
+    env.classList.add('hide-visuals');
+  }, 1000);
+}
+
+function spawnSparkle(x, y) {
+  const s = document.createElement('div');
+  s.className = 'sparkle';
+  s.textContent = ['💗','💕','✨','🌸','💎'][Math.floor(Math.random() * 5)];
+  s.style.left = `${x}px`;
+  s.style.top = `${y}px`;
+  
+  const dx = (Math.random() - 0.5) * 300;
+  const dy = (Math.random() - 0.5) * 300 - 100;
+  s.style.setProperty('--dx', `${dx}px`);
+  s.style.setProperty('--dy', `${dy}px`);
+  
+  document.body.appendChild(s);
+  setTimeout(() => s.remove(), 1200);
+}
+
+// ══════════════════════════════════════════════
+// WEB AUDIO RETRO LOVE CHIPTUNE SYNTH
+// ══════════════════════════════════════════════
+let audioCtx = null;
+let synthInterval = null;
+let musicPlaying = false;
+
+function initSynth() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+function playChime(isOpening = false) {
+  initSynth();
+  if (!audioCtx) return;
+
+  const t = audioCtx.currentTime;
+  const notes = isOpening ? [523.25, 659.25, 783.99, 1046.50] : [261.63, 329.63, 392.00, 523.25]; // C E G C arpeggio
+  notes.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, t + i * 0.1);
+    
+    gain.gain.setValueAtTime(0.15, t + i * 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + i * 0.1 + 0.4);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start(t + i * 0.1);
+    osc.stop(t + i * 0.1 + 0.5);
+  });
+}
+
+const MELODY = [
+  { f: 329.63, d: 0.4 }, { f: 392.00, d: 0.4 }, { f: 440.00, d: 0.8 },
+  { f: 440.00, d: 0.4 }, { f: 493.88, d: 0.4 }, { f: 523.25, d: 0.8 },
+  { f: 523.25, d: 0.4 }, { f: 587.33, d: 0.4 }, { f: 659.25, d: 1.2 },
+  { f: 0, d: 0.4 },
+  { f: 659.25, d: 0.4 }, { f: 587.33, d: 0.4 }, { f: 523.25, d: 0.8 },
+  { f: 493.88, d: 0.4 }, { f: 440.00, d: 0.4 }, { f: 392.00, d: 0.8 },
+  { f: 349.23, d: 0.4 }, { f: 329.63, d: 1.2 }
+];
+
+function toggleLoveMelody() {
+  initSynth();
+  if (musicPlaying) {
+    clearInterval(synthInterval);
+    document.getElementById('audioBtn').textContent = "🎵 Play Music";
+    musicPlaying = false;
+  } else {
+    document.getElementById('audioBtn').textContent = "⏸ Pause Music";
+    musicPlaying = true;
+    playMelodyLoop();
+  }
+}
+
+function playMelodyLoop() {
+  let noteIndex = 0;
+  
+  function playNextNote() {
+    if (!musicPlaying) return;
+    const note = MELODY[noteIndex];
+    if (note.f > 0) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(note.f, audioCtx.currentTime);
+      
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + note.d - 0.05);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + note.d);
+    }
+    
+    noteIndex = (noteIndex + 1) % MELODY.length;
+    synthInterval = setTimeout(playNextNote, note.d * 1000);
+  }
+  
+  playNextNote();
+}
+</script>
+</body>
+</html>

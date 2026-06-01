@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💌 LoveCraft Mailer – Send Love to Diya</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --pink: #ff6b9d;
+  --pink-dark: #800030;
+  --pink-light: #ffb3cc;
+  --gold: #ffd700;
+  --bg: #0d0d1a;
+  --panel: #1a1a2e;
+  --panel2: #12122a;
+  --border: #ff6b9d;
+  --text: #eee;
+  --muted: #888;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+
+body {
+  font-family: 'Press Start 2P', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Particle canvas ── */
+#bgCanvas {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Top bar ── */
+#topBar {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(0,0,0,0.82);
+  border-bottom: 3px solid var(--pink);
+  backdrop-filter: blur(4px);
+}
+#topBar .logo { font-size: 9px; color: var(--pink); text-shadow: 0 0 10px #ff6b9d88, 2px 2px 0 var(--pink-dark); }
+#topBar .sub  { font-size: 5px; color: var(--pink-light); }
+.backBtn {
+  background: #1e1e1e; border: 2px solid #555; border-bottom: 3px solid #222;
+  color: #aaa; font-family: 'Press Start 2P', monospace; font-size: 6px;
+  padding: 6px 10px; cursor: pointer; text-decoration: none; display: inline-block;
+}
+.backBtn:hover { border-color: var(--pink); color: var(--pink); }
+
+/* ── Main layout ── */
+#main {
+  position: relative; z-index: 10;
+  max-width: 960px; margin: 0 auto;
+  padding: 20px 16px 60px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
+@media (max-width: 760px) { #main { grid-template-columns: 1fr; } }
+
+/* ── Panels ── */
+.panel {
+  background: rgba(18,18,42,0.92);
+  border: 3px solid var(--pink);
+  box-shadow: 0 0 20px #ff6b9d22, 4px 4px 0 #000;
+  padding: 16px;
+}
+.panel h2 { font-size: 8px; color: var(--pink); margin-bottom: 14px; border-bottom: 2px solid #2a2a4a; padding-bottom: 8px; }
+.panel h3 { font-size: 7px; color: var(--gold); margin-bottom: 10px; }
+
+/* ── Form fields ── */
+label { display: block; font-size: 6px; color: var(--pink-light); margin-bottom: 5px; margin-top: 12px; }
+label:first-of-type { margin-top: 0; }
+
+input[type=text], input[type=email], textarea {
+  width: 100%;
+  background: #0a0a1a;
+  border: 2px solid #333;
+  border-bottom: 3px solid #111;
+  color: var(--text);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 6px;
+  padding: 9px 10px;
+  outline: none;
+  line-height: 2;
+  transition: border-color .2s;
+}
+input[type=text]:focus, input[type=email]:focus, textarea:focus { border-color: var(--pink); }
+textarea { resize: vertical; min-height: 160px; }
+
+/* ── Theme picker ── */
+#themePicker {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+.themeCard {
+  border: 3px solid #333;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  height: 52px;
+  transition: border-color .15s, transform .1s;
+}
+.themeCard:hover { border-color: var(--pink-light); transform: scale(1.05); }
+.themeCard.selected { border-color: var(--pink); box-shadow: 0 0 12px var(--pink); }
+.themeCard canvas { width: 100%; height: 100%; display: block; }
+.themeCard .themeLabel {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.7); font-size: 4px; color: #fff;
+  text-align: center; padding: 2px 0;
+}
+
+/* ── Preview ── */
+#previewWrap {
+  border: 3px solid #333;
+  background: #000;
+  min-height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+#previewCanvas { width: 100%; height: 300px; display: block; }
+#previewLetter {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px;
+  pointer-events: none;
+}
+#previewLetter .letterHeader { font-size: 7px; color: var(--pink); margin-bottom: 10px; text-shadow: 0 0 8px var(--pink); }
+#previewLetter .letterBody {
+  font-size: 6px; color: #eee; line-height: 2.2; text-align: center;
+  max-width: 280px; word-wrap: break-word; white-space: pre-wrap;
+  text-shadow: 1px 1px 0 #000;
+}
+#previewLetter .letterSig { font-size: 6px; color: var(--gold); margin-top: 10px; }
+
+/* ── EmailJS config box ── */
+#emailCfg { background: #0d0d20; border: 2px solid #333; padding: 12px; margin-bottom: 14px; }
+#emailCfg p { font-size: 5px; color: var(--muted); line-height: 2; margin-bottom: 8px; }
+#emailCfg a { color: var(--pink); }
+.cfgRow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 6px; }
+
+/* ── Send button ── */
+#sendBtn {
+  width: 100%;
+  background: var(--pink);
+  border: none; border-bottom: 4px solid var(--pink-dark);
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  padding: 14px;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: background .2s, transform .1s;
+  animation: sendPulse 2s ease-in-out infinite;
+}
+#sendBtn:hover { background: #ff9bbf; }
+#sendBtn:active { transform: translateY(2px); border-bottom-width: 2px; }
+@keyframes sendPulse { 0%,100%{box-shadow:0 0 0 0 #ff6b9d55} 50%{box-shadow:0 0 20px 6px #ff6b9d44} }
+#sendBtn:disabled { background: #555; border-bottom-color: #333; animation: none; cursor: not-allowed; }
+
+/* ── Status toast ── */
+#toast {
+  display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #1a1a1a; border: 3px solid var(--pink);
+  color: #fff; font-size: 7px; padding: 12px 20px;
+  z-index: 200; white-space: nowrap;
+  animation: toastIn .3s ease;
+}
+@keyframes toastIn { from{transform:translateX(-50%) translateY(20px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+
+/* ── Setup guide ── */
+.guide { font-size: 5px; color: var(--muted); line-height: 2.2; }
+.guide strong { color: var(--pink-light); }
+.step {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: #0a0a1a; border-left: 3px solid var(--pink);
+  padding: 8px; margin-bottom: 6px;
+}
+.step .num { font-size: 8px; color: var(--pink); flex-shrink: 0; }
+.step .txt { font-size: 5px; color: #ccc; line-height: 2; }
+
+/* ── Pixel hearts ── */
+.pixelHeart {
+  display: inline-block;
+  animation: heartBeat .8s ease-in-out infinite;
+}
+@keyframes heartBeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.2)} }
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- Top bar -->
+<div id="topBar">
+  <div>
+    <div class="logo">💌 LoveCraft Mailer</div>
+    <div class="sub" style="margin-top:4px">Send a pixel love letter to Diya 💕</div>
+  </div>
+  <a href="index.html" class="backBtn">⛏ Back to World</a>
+</div>
+
+<div id="main">
+
+  <!-- LEFT: Compose -->
+  <div>
+    <!-- EmailJS Config -->
+    <div class="panel" style="margin-bottom:16px">
+      <h2>⚙️ Email Setup (One-Time)</h2>
+      <div id="emailCfg">
+        <p>This mailer uses <a href="https://emailjs.com" target="_blank">EmailJS</a> (free, no backend).<br>
+        Sign up → Create a service (Gmail) → Create a template → Copy IDs below.</p>
+        <div class="cfgRow">
+          <div>
+            <label>Service ID</label>
+            <input type="text" id="cfgService" placeholder="service_xxxxxxx">
+          </div>
+          <div>
+            <label>Template ID</label>
+            <input type="text" id="cfgTemplate" placeholder="template_xxxxxxx">
+          </div>
+        </div>
+        <div style="margin-top:6px">
+          <label>Public Key</label>
+          <input type="text" id="cfgKey" placeholder="Your EmailJS public key">
+        </div>
+        <button onclick="saveConfig()" style="margin-top:10px;background:#1e1e1e;border:2px solid #555;border-bottom:3px solid #111;color:#aaa;font-family:'Press Start 2P',monospace;font-size:5px;padding:6px 10px;cursor:pointer;">💾 Save Config</button>
+        <span id="cfgStatus" style="font-size:5px;color:#5c5;margin-left:8px"></span>
+      </div>
+
+      <!-- Setup guide -->
+      <h3>📋 Setup Guide</h3>
+      <div class="step"><span class="num">1</span><div class="txt">Go to <strong>emailjs.com</strong> → Sign up free → "Add New Service" → connect Gmail</div></div>
+      <div class="step"><span class="num">2</span><div class="txt">Create an Email Template. Set <strong>To Email</strong> = <code style="color:#ff6b9d">{{to_email}}</code>, Subject = <code style="color:#ff6b9d">{{subject}}</code>, Body = <code style="color:#ff6b9d">{{html_body}}</code> (HTML)</div></div>
+      <div class="step"><span class="num">3</span><div class="txt">Copy your <strong>Service ID</strong>, <strong>Template ID</strong>, and <strong>Public Key</strong> from the EmailJS dashboard into the fields above</div></div>
+      <div class="step"><span class="num">4</span><div class="txt">Fill in your love letter below and hit <strong style="color:#ff6b9d">Send Love! 💌</strong></div></div>
+    </div>
+
+    <!-- Compose -->
+    <div class="panel">
+      <h2>✍️ Write Your Love Letter</h2>
+
+      <label>To (Her Email)</label>
+      <input type="email" id="toEmail" placeholder="diya@example.com">
+
+      <label>Subject Line</label>
+      <input type="text" id="subject" placeholder="A pixel love letter for you 💕" value="A pixel love letter for you 💕">
+
+      <label>Your Love Letter</label>
+      <textarea id="letterBody" placeholder="Write your love letter here...&#10;&#10;Dear Diya,&#10;&#10;Every day I spend with you feels like finding a diamond in the deepest cave..."></textarea>
+
+      <label>Your Name (Sign-off)</label>
+      <input type="text" id="fromName" placeholder="Samay 💗" value="Samay 💗">
+
+      <label>Choose Email Background Theme</label>
+      <div id="themePicker"></div>
+
+      <button id="sendBtn" onclick="sendLoveLetter()">💌 Send Love!</button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Preview + themes -->
+  <div>
+    <div class="panel" style="margin-bottom:16px">
+      <h2>👁 Live Preview</h2>
+      <div id="previewWrap">
+        <canvas id="previewCanvas"></canvas>
+        <div id="previewLetter">
+          <div class="letterHeader" id="pvHeader">💕 A Love Letter 💕</div>
+          <div class="letterBody" id="pvBody">Your letter will appear here...</div>
+          <div class="letterSig" id="pvSig">— with love 💗</div>
+        </div>
+      </div>
+      <p style="font-size:5px;color:#555;margin-top:8px;text-align:center">Live preview updates as you type</p>
+    </div>
+
+    <div class="panel">
+      <h2>💎 Theme Gallery</h2>
+      <p style="font-size:5px;color:#888;margin-bottom:10px;line-height:2">Click a theme below to select it. The email your girlfriend receives will have this animated background!</p>
+      <div id="themeGallery" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+// Safe storage wrapper to prevent crashes in restricted sandbox/file:/// environments
+function safeGetItem(key) {
+  try {
+    return localStorage.getItem(key) || '';
+  } catch (e) {
+    console.warn("Storage read blocked: ", e);
+    return '';
+  }
+}
+function safeSetItem(key, val) {
+  try {
+    localStorage.setItem(key, val);
+  } catch (e) {
+    console.warn("Storage write blocked: ", e);
+  }
+}
+
+// ══════════════════════════════════════════════
+// 10 EMAIL BACKGROUND THEMES
+// Each theme = { name, render(ctx, w, h, t) }
+// ══════════════════════════════════════════════
+const THEMES = [
+  {
+    name: '🌸 Love Meadow',
+    bg: ['#0a1a0a','#1a2a1a'],
+    render(ctx, w, h, t) {
+      // Sky gradient
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#87CEEB'); g.addColorStop(1,'#d4f0ff');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      // Grass strip
+      ctx.fillStyle = '#5d9e3f'; ctx.fillRect(0,h*0.7,w,h*0.3);
+      ctx.fillStyle = '#4a7e31'; ctx.fillRect(0,h*0.7,w,8);
+      // Pixelated trees
+      drawPixelTree(ctx, w*0.1, h*0.7, t);
+      drawPixelTree(ctx, w*0.85, h*0.7, t);
+      // Flowers
+      for(let i=0;i<8;i++) {
+        const fx = (i*137+t*0.3)%w;
+        const fy = h*0.72+Math.sin(i)*20;
+        ctx.fillStyle='#ff6b9d'; ctx.fillRect(fx,fy,4,4);
+        ctx.fillStyle='#ffd700'; ctx.fillRect(fx+1,fy+1,2,2);
+      }
+      // Floating hearts
+      drawFloatingHearts(ctx, w, h, t, 0.3);
+      // Clouds
+      drawPixelClouds(ctx, w, h, t);
+      // Love cabin in distance
+      drawMiniCabin(ctx, w*0.5-20, h*0.55, t);
+    }
+  },
+  {
+    name: '💎 Crystal Caves',
+    bg: ['#050010','#0a0020'],
+    render(ctx, w, h, t) {
+      const g = ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#05000f'); g.addColorStop(1,'#1a0030');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Stalactites
+      ctx.fillStyle='#333';
+      for(let i=0;i<6;i++) {
+        const x=i*(w/6)+30;
+        const hh=20+Math.sin(i*2)*15;
+        ctx.fillRect(x,0,14,hh);
+      }
+      // Stalagmites
+      for(let i=0;i<5;i++) {
+        const x=i*(w/5)+15;
+        const hh=15+Math.cos(i*1.7)*12;
+        ctx.fillRect(x,h-hh,12,hh);
+      }
+      // Glowing gems
+      const gemColors=['#ff6b9d','#4fc3f7','#ffd700','#ce93d8','#80cbc4'];
+      for(let i=0;i<12;i++) {
+        const gx=(i*167+50)%w, gy=(i*89+30)%(h-20)+10;
+        const pulse=0.5+0.5*Math.sin(t*0.05+i);
+        ctx.globalAlpha=pulse;
+        ctx.fillStyle=gemColors[i%gemColors.length];
+        ctx.fillRect(gx,gy,6,6);
+        ctx.fillRect(gx+2,gy-2,2,2);
+        ctx.globalAlpha=0.3*pulse;
+        ctx.fillRect(gx-2,gy-2,10,10);
+        ctx.globalAlpha=1;
+      }
+      // Falling love hearts
+      drawFloatingHearts(ctx, w, h, t, 0.5, true);
+      // Love ore veins
+      ctx.globalAlpha=0.4;
+      ctx.fillStyle='#ff6b9d';
+      for(let i=0;i<4;i++) {
+        const vx=(i*210+80)%w, vy=(i*130+40)%(h-30)+15;
+        ctx.fillRect(vx,vy,20,4);
+        ctx.fillRect(vx+6,vy+4,8,3);
+      }
+      ctx.globalAlpha=1;
+    }
+  },
+  {
+    name: '☁️ Cloud Kingdom',
+    bg: ['#aee2ff','#ffd0f5'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      const col1=lerpColor('#aee2ff','#ffc0e0',Math.sin(t*0.02)*0.5+0.5);
+      const col2=lerpColor('#ffd0f5','#ffffff',Math.sin(t*0.015)*0.5+0.5);
+      g.addColorStop(0,col1); g.addColorStop(1,col2);
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Cloud islands
+      for(let i=0;i<4;i++) {
+        const cx2=(i*200+t*0.2)%w;
+        const cy2=40+i*40;
+        ctx.fillStyle='rgba(255,255,255,0.85)';
+        ctx.fillRect(cx2-40,cy2,80,18);
+        ctx.fillRect(cx2-25,cy2-10,50,14);
+        // Love bricks on top
+        ctx.fillStyle='#ff6b9d';
+        for(let b=0;b<5;b++) ctx.fillRect(cx2-38+b*16,cy2-4,14,6);
+      }
+      // Stars
+      for(let i=0;i<30;i++) {
+        const sx=(i*137.5)%w, sy=(i*89)%h;
+        const p=0.4+0.6*Math.sin(t*0.08+i);
+        ctx.globalAlpha=p*0.5;
+        ctx.fillStyle='#ffb3cc'; ctx.fillRect(sx,sy,2,2);
+        ctx.globalAlpha=1;
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.6);
+    }
+  },
+  {
+    name: '🌅 Sunset Beach',
+    bg: ['#ff5e36','#ffa834'],
+    render(ctx, w, h, t) {
+      // Sunset sky
+      const g=ctx.createLinearGradient(0,0,0,h);
+      const r=lerpColor('#ff5e36','#ffa834',Math.sin(t*0.01)*0.5+0.5);
+      g.addColorStop(0,'#1a0a3a');
+      g.addColorStop(0.4,r);
+      g.addColorStop(0.7,'#ffcc66');
+      g.addColorStop(1,'#ff9999');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Sun
+      ctx.fillStyle='rgba(255,220,50,0.9)';
+      ctx.beginPath(); ctx.arc(w/2,h*0.4,22,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,200,0,0.4)';
+      ctx.beginPath(); ctx.arc(w/2,h*0.4,32,0,Math.PI*2); ctx.fill();
+      // Ocean
+      ctx.fillStyle='#1565c0';
+      ctx.fillRect(0,h*0.65,w,h*0.35);
+      // Shimmer
+      ctx.fillStyle='rgba(255,255,200,0.3)';
+      for(let i=0;i<8;i++) {
+        const sx=(i*80+t*2)%w;
+        ctx.fillRect(sx,h*0.65+8+i*4,30,3);
+      }
+      // Sand
+      ctx.fillStyle='#e8d5a3'; ctx.fillRect(0,h*0.65-8,w,16);
+      // Palm
+      drawPalm(ctx, w*0.15, h*0.65-8);
+      drawPalm(ctx, w*0.85, h*0.65-8);
+      drawFloatingHearts(ctx, w, h, t, 0.25);
+    }
+  },
+  {
+    name: '🌙 Midnight Stars',
+    bg: ['#000010','#00001a'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#000010'); g.addColorStop(1,'#0a0020');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Stars
+      for(let i=0;i<60;i++) {
+        const sx=(i*173)%w, sy=(i*97)%h;
+        const p=0.3+0.7*Math.sin(t*0.06+i*0.7);
+        ctx.globalAlpha=p;
+        ctx.fillStyle='#fff'; ctx.fillRect(sx,sy,i%5===0?2:1,i%5===0?2:1);
+        ctx.globalAlpha=1;
+      }
+      // Moon
+      ctx.fillStyle='rgba(255,240,200,0.95)';
+      ctx.beginPath(); ctx.arc(w*0.75,h*0.2,24,0,Math.PI*2); ctx.fill();
+      // Moon crater
+      ctx.fillStyle='rgba(200,180,150,0.4)';
+      ctx.beginPath(); ctx.arc(w*0.75+8,h*0.2-6,7,0,Math.PI*2); ctx.fill();
+      // Love text on moon
+      ctx.fillStyle='rgba(255,100,150,0.8)';
+      ctx.font='10px serif'; ctx.textAlign='center';
+      ctx.fillText('💕',w*0.75,h*0.2+4);
+      // Shooting stars
+      for(let i=0;i<3;i++) {
+        const p=(t*2+i*200)%400;
+        if(p<200) {
+          const sx=p*(w/200), sy=p*0.4+20;
+          ctx.globalAlpha=1-p/200;
+          ctx.fillStyle='#ffd700';
+          ctx.fillRect(sx,sy,6,2);
+          ctx.fillRect(sx-8,sy,4,1);
+          ctx.fillRect(sx-14,sy+1,3,1);
+          ctx.globalAlpha=1;
+        }
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.15, true);
+    }
+  },
+  {
+    name: '🌹 Rose Garden',
+    bg: ['#1a0010','#2a0020'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#120010'); g.addColorStop(1,'#2d0030');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Ground
+      ctx.fillStyle='#2d1a00'; ctx.fillRect(0,h*0.75,w,h*0.25);
+      ctx.fillStyle='#3d2800'; ctx.fillRect(0,h*0.75,w,4);
+      // Roses on ground
+      for(let i=0;i<7;i++) {
+        const rx=i*(w/7)+20, ry=h*0.75;
+        const sway=Math.sin(t*0.04+i)*3;
+        // Stem
+        ctx.fillStyle='#2d5a1e';
+        ctx.fillRect(rx+sway,ry-30,3,30);
+        // Leaf
+        ctx.fillStyle='#3d7a2e';
+        ctx.fillRect(rx+sway+3,ry-18,8,4);
+        // Bloom
+        ctx.fillStyle='#e63950';
+        ctx.fillRect(rx+sway-4,ry-38,10,10);
+        ctx.fillStyle='#ff6b9d';
+        ctx.fillRect(rx+sway-2,ry-40,6,6);
+        ctx.fillStyle='#ffb3cc';
+        ctx.fillRect(rx+sway,ry-42,2,2);
+      }
+      // Petals floating
+      for(let i=0;i<10;i++) {
+        const px=((i*137+t*0.8)%w);
+        const py=((i*89+t*1.2)%h);
+        ctx.fillStyle='#ff6b9d';
+        ctx.globalAlpha=0.6;
+        ctx.fillRect(px,py,4,3);
+        ctx.globalAlpha=1;
+      }
+      // Twinkling lights
+      for(let i=0;i<20;i++) {
+        const lx=(i*167+30)%w, ly=(i*113+20)%(h*0.7);
+        const p=0.3+0.7*Math.sin(t*0.1+i);
+        ctx.globalAlpha=p*0.7;
+        ctx.fillStyle='#ffd700'; ctx.fillRect(lx,ly,2,2);
+        ctx.globalAlpha=1;
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.4);
+    }
+  },
+  {
+    name: '💗 Pink Pixel City',
+    bg: ['#1a0030','#0a001a'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#120020'); g.addColorStop(1,'#1a0030');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // City skyline
+      const buildings=[
+        {x:0,w:50,h:120,c:'#2a0040'},
+        {x:45,w:35,h:160,c:'#1e0038'},
+        {x:75,w:60,h:100,c:'#2e0050'},
+        {x:130,w:45,h:180,c:'#250044'},
+        {x:170,w:55,h:130,c:'#300060'},
+        {x:220,w:40,h:150,c:'#1c0034'},
+        {x:255,w:65,h:110,c:'#280048'},
+        {x:315,w:50,h:170,c:'#220040'},
+        {x:360,w:40,h:140,c:'#2c0054'},
+      ];
+      buildings.forEach(b => {
+        if(b.x>w) return;
+        ctx.fillStyle=b.c; ctx.fillRect(b.x,h-b.h,b.w,b.h);
+        // Windows
+        for(let wy2=h-b.h+10;wy2<h-10;wy2+=20) {
+          for(let wx2=b.x+6;wx2<b.x+b.w-6;wx2+=14) {
+            const lit=Math.sin(t*0.05+wx2*0.1+wy2*0.1)>0.3;
+            ctx.fillStyle=lit?'#ff6b9d':'#2a002a';
+            ctx.fillRect(wx2,wy2,6,8);
+          }
+        }
+      });
+      // Neon signs
+      ctx.globalAlpha=0.6+0.4*Math.sin(t*0.1);
+      ctx.fillStyle='#ff6b9d';
+      ctx.font='8px serif'; ctx.textAlign='center';
+      ctx.fillText('💕',w*0.3,h-80);
+      ctx.fillText('💗',w*0.6,h-120);
+      ctx.fillText('❤️',w*0.15,h-100);
+      ctx.globalAlpha=1;
+      drawFloatingHearts(ctx, w, h, t, 0.3, true);
+    }
+  },
+  {
+    name: '🌺 Cherry Blossom',
+    bg: ['#fff0f8','#ffe0f0'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#fff8fc'); g.addColorStop(1,'#ffd4e8');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Ground
+      ctx.fillStyle='#c8f0a0'; ctx.fillRect(0,h*0.8,w,h*0.2);
+      ctx.fillStyle='#a8d080'; ctx.fillRect(0,h*0.8,w,5);
+      // Cherry trees
+      drawCherryTree(ctx, w*0.2, h*0.8, t, 60);
+      drawCherryTree(ctx, w*0.7, h*0.8, t, 50);
+      // Falling petals
+      for(let i=0;i<20;i++) {
+        const px=((i*173+t*1.5)%w);
+        const py=((i*89+t*2.2)%h);
+        const rot=t*0.1+i;
+        ctx.globalAlpha=0.7;
+        ctx.fillStyle=['#ffb3cc','#ff6b9d','#ffc0cb','#ff8fab'][i%4];
+        ctx.fillRect(px,py,5,3);
+        ctx.globalAlpha=1;
+      }
+      // Love notes falling
+      for(let i=0;i<5;i++) {
+        const nx=((i*200+t*0.8+100)%w);
+        const ny=((i*160+t*1.8)%h);
+        ctx.font='10px serif'; ctx.fillText('💌',nx,ny);
+      }
+      drawFloatingHearts(ctx, w, h, t, 0.2);
+    }
+  },
+  {
+    name: '⭐ Golden Galaxy',
+    bg: ['#0a0510','#100a20'],
+    render(ctx, w, h, t) {
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#050208'); g.addColorStop(1,'#0d0820');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      // Nebula
+      for(let i=0;i<5;i++) {
+        const nx=(i*200+100)%w, ny=(i*130+60)%h;
+        const r=60+i*20;
+        const ng=ctx.createRadialGradient(nx,ny,0,nx,ny,r);
+        ng.addColorStop(0,`rgba(${i%2?255:100},${i%3?100:50},${200-i*30},0.08)`);
+        ng.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=ng; ctx.fillRect(nx-r,ny-r,r*2,r*2);
+      }
+      // Stars
+      for(let i=0;i<80;i++) {
+        const sx=(i*173)%w, sy=(i*97)%h;
+        const size=i%10===0?3:i%4===0?2:1;
+        const p=0.4+0.6*Math.sin(t*0.05+i);
+        ctx.globalAlpha=p;
+        ctx.fillStyle=i%5===0?'#ffd700':'#fff';
+        ctx.fillRect(sx,sy,size,size);
+        ctx.globalAlpha=1;
+      }
+      // Gold sparkles
+      for(let i=0;i<8;i++) {
+        const sx=((i*211+t*1.5)%w), sy=((i*157+t*0.8)%h);
+        const p=0.5+0.5*Math.sin(t*0.15+i);
+        ctx.globalAlpha=p;
+        ctx.fillStyle='#ffd700';
+        ctx.fillRect(sx,sy,4,1); ctx.fillRect(sx+1,sy-1,2,3);
+        ctx.globalAlpha=1;
+      }
+      // Planet
+      ctx.fillStyle='rgba(200,130,255,0.6)';
+      ctx.beginPath(); ctx.arc(w*0.8,h*0.25,18,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,100,200,0.5)';
+      ctx.fillRect(w*0.8-25,h*0.25-3,50,6);
+      drawFloatingHearts(ctx, w, h, t, 0.2, true);
+    }
+  },
+  {
+    name: '🏠 Love Cabin',
+    bg: ['#0a0a1a','#1a1a2e'],
+    render(ctx, w, h, t) {
+      // Sky with stars
+      const g=ctx.createLinearGradient(0,0,0,h);
+      g.addColorStop(0,'#0a0a1a'); g.addColorStop(1,'#1a1a2e');
+      ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+      for(let i=0;i<50;i++) {
+        const sx=(i*137)%w, sy=(i*89)%(h*0.65);
+        const p=0.3+0.7*Math.sin(t*0.06+i);
+        ctx.globalAlpha=p*0.7; ctx.fillStyle='#ffb3cc';
+        ctx.fillRect(sx,sy,i%4===0?2:1,i%4===0?2:1);
+        ctx.globalAlpha=1;
+      }
+      // Moon
+      ctx.fillStyle='rgba(255,240,200,0.9)';
+      ctx.beginPath(); ctx.arc(w*0.8,h*0.15,18,0,Math.PI*2); ctx.fill();
+      // Ground
+      ctx.fillStyle='#2d4a1e'; ctx.fillRect(0,h*0.68,w,h*0.32);
+      ctx.fillStyle='#5d9e3f'; ctx.fillRect(0,h*0.68,w,8);
+      // Central Love Cabin (the game's cabin!)
+      const cx=w/2, cy=h*0.68;
+      // Cabin floor
+      ctx.fillStyle='#6b4226';
+      for(let i=0;i<9;i++) ctx.fillRect(cx-72+i*16,cy,14,6);
+      // Walls
+      ctx.fillStyle='#ff6b9d';
+      [[cx-68,cy-60,12,60],[cx+56,cy-60,12,60]].forEach(([x,y,ww,hh])=>ctx.fillRect(x,y,ww,hh));
+      // Back wall
+      for(let i=0;i<9;i++) {
+        ctx.fillStyle=i%2===0?'#ff6b9d':'#d63d70';
+        ctx.fillRect(cx-68+i*16,cy-62,14,6);
+      }
+      // Roof
+      ctx.fillStyle='#d63d70';
+      for(let i=0;i<9;i++) ctx.fillRect(cx-74+i*18,cy-68,16,8);
+      // Door
+      ctx.fillStyle='#4a2d15'; ctx.fillRect(cx-8,cy-40,16,40);
+      // Windows (heart glass effect)
+      ctx.fillStyle='rgba(255,100,150,0.5)';
+      ctx.fillRect(cx-52,cy-50,16,16);
+      ctx.fillRect(cx+36,cy-50,16,16);
+      ctx.fillStyle='#ff6b9d';
+      ctx.font='10px serif'; ctx.textAlign='center';
+      ctx.fillText('💗',cx-44,cy-38);
+      ctx.fillText('💗',cx+44,cy-38);
+      // Chimney smoke
+      for(let i=0;i<3;i++) {
+        const px=cx+50+Math.sin(t*0.05+i)*4;
+        const py=cy-68-i*12-((t*0.5)%12);
+        ctx.globalAlpha=0.4-i*0.1;
+        ctx.fillStyle='#aaa'; ctx.fillRect(px,py,8,6);
+        ctx.globalAlpha=1;
+      }
+      // Roses beside cabin
+      for(let i=0;i<4;i++) {
+        const rx=cx-90+i*8, ry=cy-1;
+        ctx.fillStyle='#2d5a1e'; ctx.fillRect(rx,ry-16,3,16);
+        ctx.fillStyle='#e63950'; ctx.fillRect(rx-3,ry-22,8,8);
+        ctx.fillStyle='#ff6b9d'; ctx.fillRect(rx-1,ry-24,4,4);
+      }
+      // Fireplace glow
+      const glow=0.3+0.2*Math.sin(t*0.2);
+      ctx.globalAlpha=glow;
+      ctx.fillStyle='#ff8c00'; ctx.fillRect(cx-6,cy-15,12,12);
+      ctx.globalAlpha=1;
+      drawFloatingHearts(ctx, w, h, t, 0.2);
+    }
+  }
+];
+
+// ── Helper drawing functions ──
+function drawPixelTree(ctx, x, y, t) {
+  const sway=Math.sin(t*0.04)*2;
+  ctx.fillStyle='#6b4226'; ctx.fillRect(x+sway,y-40,8,40);
+  ctx.fillStyle='#2d7a1e'; ctx.fillRect(x-16+sway,y-70,40,32);
+  ctx.fillRect(x-10+sway,y-85,28,24);
+  ctx.fillRect(x-4+sway,y-96,16,18);
+}
+function drawMiniCabin(ctx, x, y, t) {
+  ctx.fillStyle='#ff6b9d'; ctx.fillRect(x,y-30,40,30);
+  ctx.fillStyle='#d63d70'; ctx.fillRect(x-4,y-36,48,8);
+  ctx.fillStyle='#4a2d15'; ctx.fillRect(x+16,y-20,8,20);
+  ctx.fillStyle='rgba(255,150,200,0.5)'; ctx.fillRect(x+4,y-26,8,8); ctx.fillRect(x+28,y-26,8,8);
+}
+function drawFloatingHearts(ctx, w, h, t, speed=0.3, rise=false) {
+  const emojis=['💗','💕','❤️','💖','✨'];
+  for(let i=0;i<8;i++) {
+    const hx=((i*173+t*speed*80)%w);
+    const hy=rise?((h-(i*89+t*speed*60)%h)):((i*89+t*speed*60)%h);
+    ctx.globalAlpha=0.6+0.4*Math.sin(t*0.08+i);
+    ctx.font='12px serif'; ctx.textAlign='center';
+    ctx.fillText(emojis[i%emojis.length],hx,hy);
+    ctx.globalAlpha=1;
+  }
+}
+function drawPixelClouds(ctx, w, h, t) {
+  for(let i=0;i<4;i++) {
+    const cx2=((i*250+t*0.4)%w)-40;
+    const cy2=20+i*18;
+    ctx.fillStyle='rgba(255,255,255,0.8)';
+    ctx.fillRect(cx2,cy2,60,14); ctx.fillRect(cx2+8,cy2-8,44,12);
+  }
+}
+function drawPalm(ctx, x, y) {
+  ctx.fillStyle='#6b4226';
+  for(let i=0;i<8;i++) ctx.fillRect(x+Math.floor(i*0.5),y-i*8,6,8);
+  ctx.fillStyle='#2d7a1e';
+  [[-30,-10,28,8],[-10,-20,24,8],[2,-25,26,8],[10,-10,20,8]].forEach(([dx,dy,ww,hh])=>ctx.fillRect(x+dx,y-64+dy,ww,hh));
+}
+function drawCherryTree(ctx, x, y, t, size) {
+  ctx.fillStyle='#6b4226'; ctx.fillRect(x-3,y-size,6,size);
+  const sway=Math.sin(t*0.04)*3;
+  ctx.fillStyle='rgba(255,120,150,0.7)';
+  ctx.beginPath(); ctx.arc(x+sway,y-size-20,size*0.5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,180,200,0.5)';
+  ctx.beginPath(); ctx.arc(x+sway-10,y-size-10,size*0.35,0,Math.PI*2); ctx.fill();
+}
+function lerpColor(a,b,t2) {
+  const ah=a.replace('#',''), bh=b.replace('#','');
+  const ar=parseInt(ah.slice(0,2),16), ag=parseInt(ah.slice(2,4),16), ab2=parseInt(ah.slice(4,6),16);
+  const br=parseInt(bh.slice(0,2),16), bg=parseInt(bh.slice(2,4),16), bb2=parseInt(bh.slice(4,6),16);
+  const rr=Math.round(ar+(br-ar)*t2), rg=Math.round(ag+(bg-ag)*t2), rb=Math.round(ab2+(bb2-ab2)*t2);
+  return `rgb(${rr},${rg},${rb})`;
+}
+
+// ══════════════════════════════════════════════
+// CANVAS ANIMATIONS
+// ══════════════════════════════════════════════
+
+// Background canvas
+const bgCanvas = document.getElementById('bgCanvas');
+const bgCtx = bgCanvas.getContext('2d');
+bgCanvas.width = window.innerWidth;
+bgCanvas.height = window.innerHeight;
+window.addEventListener('resize', () => { bgCanvas.width=window.innerWidth; bgCanvas.height=window.innerHeight; });
+
+// Preview canvas
+const pvCanvas = document.getElementById('previewCanvas');
+const pvCtx = pvCanvas.getContext('2d');
+pvCanvas.width = 380; pvCanvas.height = 300;
+
+let selectedTheme = 0;
+let animT = 0;
+
+function renderBg() {
+  THEMES[selectedTheme].render(bgCtx, bgCanvas.width, bgCanvas.height, animT);
+}
+function renderPreview() {
+  THEMES[selectedTheme].render(pvCtx, pvCanvas.width, pvCanvas.height, animT);
+}
+function loop() {
+  animT++;
+  renderBg();
+  renderPreview();
+  requestAnimationFrame(loop);
+}
+loop();
+
+// ══════════════════════════════════════════════
+// THEME PICKER UI
+// ══════════════════════════════════════════════
+function buildThemePicker() {
+  const picker = document.getElementById('themePicker');
+  const gallery = document.getElementById('themeGallery');
+  picker.innerHTML=''; gallery.innerHTML='';
+
+  THEMES.forEach((th, i) => {
+    // Small picker card
+    const card = document.createElement('div');
+    card.className='themeCard'+(i===selectedTheme?' selected':'');
+    const c = document.createElement('canvas');
+    c.width=80; c.height=52;
+    const cx2=c.getContext('2d');
+    th.render(cx2,80,52,60); // static preview
+    card.appendChild(c);
+    const lbl=document.createElement('div');
+    lbl.className='themeLabel'; lbl.textContent=th.name;
+    card.appendChild(lbl);
+    card.onclick=()=>selectTheme(i);
+    picker.appendChild(card);
+
+    // Gallery card
+    const gcard=document.createElement('div');
+    gcard.style.cssText='border:3px solid #333;cursor:pointer;overflow:hidden;';
+    if(i===selectedTheme) gcard.style.borderColor='#ff6b9d';
+    const gc2=document.createElement('canvas');
+    gc2.width=160; gc2.height=90; gc2.style.width='100%'; gc2.style.height='auto';
+    const gcx=gc2.getContext('2d');
+    th.render(gcx,160,90,80);
+    gcard.appendChild(gc2);
+    const glbl=document.createElement('div');
+    glbl.style.cssText='background:rgba(0,0,0,0.8);font-size:5px;color:#fff;padding:4px;text-align:center;font-family:\'Press Start 2P\',monospace;';
+    glbl.textContent=th.name;
+    gcard.appendChild(glbl);
+    gcard.onclick=()=>selectTheme(i);
+    gallery.appendChild(gcard);
+  });
+}
+function selectTheme(i) {
+  selectedTheme=i;
+  buildThemePicker();
+}
+buildThemePicker();
+
+// ══════════════════════════════════════════════
+// LIVE PREVIEW UPDATES
+// ══════════════════════════════════════════════
+function updatePreview() {
+  const to=document.getElementById('toEmail').value||'Diya 💕';
+  const body=document.getElementById('letterBody').value||'Your letter will appear here...';
+  const sig=document.getElementById('fromName').value||'with love';
+  document.getElementById('pvHeader').textContent='💕 A Love Letter 💕';
+  document.getElementById('pvBody').textContent=body.substring(0,120)+(body.length>120?'...':'');
+  document.getElementById('pvSig').textContent=`— ${sig}`;
+}
+['toEmail','letterBody','fromName','subject'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', updatePreview);
+});
+
+// ══════════════════════════════════════════════
+// EMAILJS CONFIG SAVE/LOAD
+// ══════════════════════════════════════════════
+function saveConfig() {
+  const s=document.getElementById('cfgService').value.trim();
+  const tp=document.getElementById('cfgTemplate').value.trim();
+  const k=document.getElementById('cfgKey').value.trim();
+  if(!s||!tp||!k) { showToast('⚠️ Fill all 3 fields!','#ff4444'); return; }
+  safeSetItem('lc_service',s);
+  safeSetItem('lc_template',tp);
+  safeSetItem('lc_key',k);
+  document.getElementById('cfgStatus').textContent='✅ Saved!';
+  setTimeout(()=>document.getElementById('cfgStatus').textContent='',3000);
+}
+function loadConfig() {
+  const s=safeGetItem('lc_service');
+  const tp=safeGetItem('lc_template');
+  const k=safeGetItem('lc_key');
+  if(s) document.getElementById('cfgService').value=s;
+  if(tp) document.getElementById('cfgTemplate').value=tp;
+  if(k) document.getElementById('cfgKey').value=k;
+}
+loadConfig();
+
+// ══════════════════════════════════════════════
+// SEND LOVE LETTER
+// ══════════════════════════════════════════════
+async function sendLoveLetter() {
+  const serviceId  = document.getElementById('cfgService').value.trim()  || safeGetItem('lc_service');
+  const templateId = document.getElementById('cfgTemplate').value.trim() || safeGetItem('lc_template');
+  const publicKey  = document.getElementById('cfgKey').value.trim()      || safeGetItem('lc_key');
+
+  if (!serviceId||!templateId||!publicKey) {
+    showToast('⚠️ Please fill EmailJS config first!','#ff4444'); return;
+  }
+
+  const toEmail  = document.getElementById('toEmail').value.trim();
+  const subject  = document.getElementById('subject').value.trim() || 'A love letter for you 💕';
+  const body     = document.getElementById('letterBody').value.trim();
+  const fromName = document.getElementById('fromName').value.trim() || 'with love';
+
+  if (!toEmail) { showToast('⚠️ Enter her email!','#ff4444'); return; }
+  if (!body)    { showToast('⚠️ Write your letter!','#ff4444'); return; }
+
+  const btn = document.getElementById('sendBtn');
+  btn.disabled=true; btn.textContent='📤 Sending...';
+
+  // Build share link URL so she can open the animated letter!
+  const payload = {
+    n: toEmail,
+    l: body,
+    t: selectedTheme,
+    f: fromName,
+    s: subject
+  };
+  const base64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  // Points to our beautiful receiving love letter page!
+  const shareUrl = `${window.location.origin}/love.html#letter=${base64}`;
+
+  // Build the styled HTML email
+  const htmlBody = buildEmailHTML(body, fromName, selectedTheme, shareUrl);
+
+  try {
+    emailjs.init(publicKey);
+    await emailjs.send(serviceId, templateId, {
+      to_email:  toEmail,
+      subject:   subject,
+      html_body: htmlBody,
+      from_name: fromName,
+      message_link: shareUrl,
+      message:   body
+    });
+    showToast('💌 Love letter sent to Diya! 💕','#ff6b9d');
+    spawnConfetti();
+  } catch(err) {
+    console.error(err);
+    // If background fails, provide a smooth fallback to local mail app!
+    showToast('⚠️ Error: '+err.text+'. Falling back to local mail client...','#ffaa00');
+    fallbackMailto(toEmail, fromName, shareUrl);
+  } finally {
+    btn.disabled=false; btn.textContent='💌 Send Love!';
+  }
+}
+
+function fallbackMailto(gfEmail, gfName, shareUrl) {
+  const subject = encodeURIComponent("A Special Love Letter For You 💕");
+  const body = encodeURIComponent(`Dearest Diya,\n\nI have created a special, animated love letter for you. Click the link below to open your envelope and see it:\n\n${shareUrl}\n\nWith all my love ❤️`);
+  window.open(`mailto:${gfEmail}?subject=${subject}&body=${body}`, '_blank');
+  alert(`💌 I've opened your default Gmail / Email app with the recipient, subject, and letter link pre-filled!\n\nJust click "Send" in your email client to send it directly.`);
+}
+
+// ══════════════════════════════════════════════
+// BUILD HTML EMAIL — matches game theme
+// ══════════════════════════════════════════════
+function buildEmailHTML(body, fromName, themeIdx, shareUrl) {
+  const theme = THEMES[themeIdx];
+  const themeStyles = getThemeEmailStyle(themeIdx);
+
+  const lines = body.split('\n').map(l => l.trim() ? `<p style="margin:0 0 12px">${l}</p>` : '<br>').join('');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Arial,sans-serif;background:${themeStyles.bg};padding:0;}
+.outer{width:100%;min-height:100vh;background:${themeStyles.outerBg};padding:30px 20px;}
+.card{max-width:580px;margin:0 auto;background:${themeStyles.cardBg};border:4px solid ${themeStyles.accent};box-shadow:0 0 40px ${themeStyles.glow},8px 8px 0 #000;}
+.header{background:${themeStyles.headerBg};padding:28px 24px;text-align:center;border-bottom:3px solid ${themeStyles.accent};}
+.header h1{font-family:'Press Start 2P',monospace;font-size:14px;color:${themeStyles.accent};text-shadow:0 0 12px ${themeStyles.glow},3px 3px 0 ${themeStyles.shadow};line-height:1.8;}
+.header p{font-family:'Press Start 2P',monospace;font-size:7px;color:${themeStyles.subColor};margin-top:8px;line-height:2;}
+.pixelRow{display:flex;justify-content:center;gap:6px;margin:10px 0;font-size:18px;}
+.body{padding:28px 24px;}
+.letterBox{background:${themeStyles.letterBg};border:2px solid ${themeStyles.accent}44;border-left:4px solid ${themeStyles.accent};padding:20px;margin-bottom:20px;}
+.letterBox p, .letterBox br{font-family:Arial,sans-serif;font-size:14px;color:${themeStyles.textColor};line-height:1.9;}
+.sig{font-family:'Press Start 2P',monospace;font-size:9px;color:${themeStyles.accent};margin-top:16px;text-align:right;text-shadow:0 0 8px ${themeStyles.glow};}
+.footer{background:${themeStyles.footerBg};padding:14px 24px;text-align:center;border-top:2px solid ${themeStyles.accent}44;}
+.footer p{font-family:'Press Start 2P',monospace;font-size:6px;color:${themeStyles.footerColor};line-height:2.2;}
+.pixelDivider{display:flex;align-items:center;gap:0;margin:16px 0;}
+.pixelDivider span{display:inline-block;height:3px;background:${themeStyles.accent};flex:1;}
+.pixelDivider em{font-style:normal;font-size:14px;margin:0 6px;}
+.badge{display:inline-block;background:${themeStyles.accent};color:#fff;font-family:'Press Start 2P',monospace;font-size:6px;padding:4px 8px;margin:4px;}
+.button-link {display:inline-block;background:${themeStyles.accent};color:#fff;font-family:'Press Start 2P',monospace;font-size:9px;padding:12px 24px;text-decoration:none;border-radius:6px;border-bottom:4px solid ${themeStyles.shadow};margin:14px 0;}
+</style>
+</head>
+<body>
+<div class="outer">
+  <div class="card">
+    <div class="header">
+      <div class="pixelRow">💕 💗 💕</div>
+      <h1>LoveCraft Mail</h1>
+      <p>📬 A pixel love letter arrived!</p>
+      <p style="margin-top:4px;font-size:6px">${theme.name}</p>
+    </div>
+    <div class="body">
+      <div class="pixelDivider"><span></span><em>💌</em><span></span></div>
+      <div class="letterBox">
+        ${lines}
+        <div class="sig">— ${escHtml(fromName)}</div>
+      </div>
+      
+      <div style="text-align:center;margin:20px 0;">
+        <a href="${shareUrl}" target="_blank" class="button-link">▶ Open Animated Letter 🔮</a>
+      </div>
+
+      <div class="pixelDivider"><span></span><em>💎</em><span></span></div>
+      <p style="font-family:'Press Start 2P',monospace;font-size:6px;color:${themeStyles.subColor};text-align:center;line-height:2.5;margin-top:14px;">
+        This letter was crafted with love<br>
+        in the <span style="color:${themeStyles.accent}">LoveCraft World</span> 💕<br>
+        A world built just for you.
+      </p>
+      <div style="text-align:center;margin-top:14px;">
+        <span class="badge">💗 With Love</span>
+        <span class="badge">⛏ LoveCraft</span>
+        <span class="badge">💎 Just For You</span>
+      </div>
+    </div>
+    <div class="footer">
+      <p>💕 Sent from LoveCraft World · ${theme.name}</p>
+      <p style="margin-top:4px;color:${themeStyles.accent}44">You are loved more than all the pixels in the universe.</p>
+    </div>
+  </div>
+</div>
+` + '</' + 'body>' + '</' + 'html>';
+}
+
+function getThemeEmailStyle(i) {
+  const styles = [
+    // 0 Love Meadow
+    { bg:'#0a1a0a', outerBg:'linear-gradient(135deg,#0a1a0a,#1a2a1a)', cardBg:'#0d1f0d', headerBg:'linear-gradient(135deg,#1a3a1a,#0d2a0d)', accent:'#ff6b9d', glow:'#ff6b9d44', shadow:'#800030', subColor:'#ffb3cc', letterBg:'rgba(255,107,157,0.06)', textColor:'#e8f5e9', footerBg:'#081508', footerColor:'#5d9e3f' },
+    // 1 Crystal Caves
+    { bg:'#050010', outerBg:'linear-gradient(135deg,#050010,#0a0020)', cardBg:'#08000f', headerBg:'linear-gradient(135deg,#1a0030,#0d001a)', accent:'#4fc3f7', glow:'#4fc3f744', shadow:'#003060', subColor:'#ce93d8', letterBg:'rgba(79,195,247,0.06)', textColor:'#e0f7ff', footerBg:'#030008', footerColor:'#ce93d8' },
+    // 2 Cloud Kingdom
+    { bg:'#aee2ff', outerBg:'linear-gradient(135deg,#aee2ff,#ffd0f5)', cardBg:'#fff8fc', headerBg:'linear-gradient(135deg,#ffd0f5,#ffffff)', accent:'#ff6b9d', glow:'#ff6b9d44', shadow:'#800030', subColor:'#d63d70', letterBg:'rgba(255,107,157,0.06)', textColor:'#2a0020', footerBg:'#ffddf0', footerColor:'#d63d70' },
+    // 3 Sunset Beach
+    { bg:'#0a0510', outerBg:'linear-gradient(135deg,#1a0510,#2a1000)', cardBg:'#120805', headerBg:'linear-gradient(135deg,#ff5e36,#ffa834)', accent:'#ffd700', glow:'#ffd70044', shadow:'#c49a00', subColor:'#ffe0a0', letterBg:'rgba(255,215,0,0.06)', textColor:'#fff8e1', footerBg:'#0a0500', footerColor:'#ffa834' },
+    // 4 Midnight Stars
+    { bg:'#000010', outerBg:'linear-gradient(135deg,#000010,#00001a)', cardBg:'#00000f', headerBg:'linear-gradient(135deg,#000020,#000010)', accent:'#b39ddb', glow:'#b39ddb44', shadow:'#4527a0', subColor:'#e1bee7', letterBg:'rgba(179,157,219,0.06)', textColor:'#f3e5f5', footerBg:'#000008', footerColor:'#7e57c2' },
+    // 5 Rose Garden
+    { bg:'#1a0010', outerBg:'linear-gradient(135deg,#120010,#200015)', cardBg:'#140010', headerBg:'linear-gradient(135deg,#3d0020,#200010)', accent:'#e63950', glow:'#e6395044', shadow:'#800020', subColor:'#ffb3cc', letterBg:'rgba(230,57,80,0.06)', textColor:'#fff0f2', footerBg:'#0a0008', footerColor:'#e63950' },
+    // 6 Pink Pixel City
+    { bg:'#0a0015', outerBg:'linear-gradient(135deg,#0a0015,#150020)', cardBg:'#0d0018', headerBg:'linear-gradient(135deg,#200040,#100025)', accent:'#ff6b9d', glow:'#ff6b9d44', shadow:'#800030', subColor:'#ce93d8', letterBg:'rgba(255,107,157,0.06)', textColor:'#f8eaff', footerBg:'#050010', footerColor:'#9c27b0' },
+    // 7 Cherry Blossom
+    { bg:'#fff0f8', outerBg:'linear-gradient(135deg,#fff8fc,#ffe0f0)', cardBg:'#fffcfe', headerBg:'linear-gradient(135deg,#ffd4e8,#ffecf5)', accent:'#e91e8c', glow:'#e91e8c44', shadow:'#880050', subColor:'#d63d70', letterBg:'rgba(233,30,140,0.04)', textColor:'#1a0010', footerBg:'#ffe4f0', footerColor:'#d63d70' },
+    // 8 Golden Galaxy
+    { bg:'#0a0510', outerBg:'linear-gradient(135deg,#050210,#100820)', cardBg:'#080510', headerBg:'linear-gradient(135deg,#1a1030,#0d0820)', accent:'#ffd700', glow:'#ffd70044', shadow:'#a07800', subColor:'#ffe082', letterBg:'rgba(255,215,0,0.06)', textColor:'#fff8e1', footerBg:'#040208', footerColor:'#ffa000' },
+    // 9 Love Cabin
+    { bg:'#0d0d1a', outerBg:'linear-gradient(135deg,#0d0d1a,#1a1a2e)', cardBg:'#0f0f1e', headerBg:'linear-gradient(135deg,#ff6b9d,#d63d70)', accent:'#ff6b9d', glow:'#ff6b9d44', shadow:'#800030', subColor:'#ffb3cc', letterBg:'rgba(255,107,157,0.06)', textColor:'#eee', footerBg:'#080814', footerColor:'#ff6b9d' },
+  ];
+  return styles[i] || styles[0];
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ══════════════════════════════════════════════
+// CONFETTI ON SEND
+// ══════════════════════════════════════════════
+let confetti = [];
+function spawnConfetti() {
+  for(let i=0;i<60;i++) {
+    confetti.push({
+      x: Math.random()*window.innerWidth,
+      y: -20,
+      vx: (Math.random()-0.5)*4,
+      vy: 2+Math.random()*4,
+      life: 1,
+      emoji: ['💗','💕','❤️','💎','⭐','✨','💌','🌹'][Math.floor(Math.random()*8)],
+      size: 14+Math.random()*10
+    });
+  }
+  animateConfetti();
+}
+function animateConfetti() {
+  if(!confetti.length) return;
+  confetti=confetti.filter(c=>c.life>0);
+  confetti.forEach(c=>{ c.x+=c.vx; c.y+=c.vy; c.life-=0.008; c.vy+=0.05; });
+
+  const ovCtx = bgCtx;
+  ovCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  renderBg();
+  confetti.forEach(c=>{
+    ovCtx.globalAlpha=c.life;
+    ovCtx.font=`${c.size}px serif`;
+    ovCtx.textAlign='center';
+    ovCtx.fillText(c.emoji,c.x,c.y);
+  });
+  ovCtx.globalAlpha=1;
+  if(confetti.length) requestAnimationFrame(animateConfetti);
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function showToast(msg, color='#ff6b9d') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.borderColor=color;
+  t.style.display='block';
+  setTimeout(()=>t.style.display='none', 3500);
+}
+</script>
+</body>
+</html>
